@@ -109,6 +109,8 @@ void BIOOutDecWord (INT32U binword, INT8U field, BIO_OUTDEC_MODE mode);
 * BIOOutCRLF() - Outputs a carriage return and line feed.
 *
 ********************************************************************/
+void BIOOutDecNoLeadingZeros(INT32U binword, INT8U field, BIO_OUTDEC_MODE mode);
+
 void BIOOutCRLF(void);
 
 /************************************************************************
