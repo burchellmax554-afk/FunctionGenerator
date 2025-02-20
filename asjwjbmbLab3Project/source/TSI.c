@@ -25,8 +25,8 @@ void CTIMER0_IRQHandler(void)
 static void CTIMERInit(void)
 {
     /* Use 96 MHz clock for some of the Ctimer0. */
-    CLOCK_SetClkDiv(kCLOCK_DivCtimer0Clk, 1u);
-    CLOCK_AttachClk(kFRO_HF_to_CTIMER0);
+    CLOCK_SetClkDiv(344, 1u);
+    CLOCK_AttachClk(kFRO12M_to_FLEXCOMM4);
 
     /* Enable Timer0 clock. */
     SYSCON->AHBCLKCTRLSET[1] |= SYSCON_AHBCLKCTRL1_TIMER0_MASK;
@@ -49,7 +49,7 @@ static void CTIMERInit(void)
                     CTIMER_MCR_MR0I(1U);     /* Enable interrupt generation after TC matches with MR0. */
 
     /* Configure match register. */
-    CTIMER0->MR[0] = (nt_kernel_data.rom->time_period * CLOCK_GetFreq(kCLOCK_FroHf))  /* Get CTimer0 frequency for correct set Match register value. */
+    CTIMER0->MR[0] = (nt_kernel_data.rom->time_period * CLOCK_GetFreq(8))  /* Get CTimer0 frequency for correct set Match register value. */
                      / 1000;                 /* Set slow control loop frequency in Hz. */
 
     /* Configure interrupt register. */
