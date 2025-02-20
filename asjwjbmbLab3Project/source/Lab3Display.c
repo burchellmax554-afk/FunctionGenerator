@@ -12,16 +12,12 @@ typedef enum {
     pulse
 } WAVE_FORM;
 
-/****************************************************************************************
-* <<< New definitions to better fit with tasks
-****************************************************************************************/
-#define APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE APP_CFG_TASK1_STK_SIZE /*Define variable names to better match lab2 over lab 1*/
-#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO APP_CFG_TASK1_PRIO /*Define variable names to better match lab 2 over lab 1*/
+
 /****************************************************************************************
 * Allocate task control blocks
 ****************************************************************************************/
 static OS_TCB appTaskStartTCB;
-static OS_TCB appTaskTimerDisplayTCB;
+static OS_TCB appTaskFunctionDisplayTCB;
 /****************************************************************************************
 * Allocate task stack space.
 ****************************************************************************************/
@@ -88,6 +84,7 @@ void main(void) {
     assert(0);						/* Should never get here */
 }
 
+
 /****************************************************************************************
 * STARTUP TASK
 ****************************************************************************************/
@@ -103,7 +100,7 @@ static void appStartTask(void *p_arg) {
     GpioDBugBitsInit();
     SwInit();
 
-    OSTaskCreate(&appTaskTimerDisplayTCB,                  /* Create Task 1                    */
+    OSTaskCreate(&appTaskFunctionDisplayTCB,                  /* Create Task 1                    */
                 "App Task TimerDisplay ",
                 appTaskFunctionDisplay,
                 (void *) 0,
