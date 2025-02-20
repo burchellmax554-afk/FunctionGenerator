@@ -14,7 +14,7 @@
 #include "FRDM_MCXN947_GPIO.h"
 #include "CsOS_SW.h"
 #include "BasicIO.h"
-
+#include "TSI.h"
 #include "app_cfg.h"
 /*****************************************************************************************
 * Allocate task control blocks
@@ -104,6 +104,7 @@ static void appStartTask(void *p_arg) {
     GpioLEDREDInit();
     GpioDBugBitsInit();
     SwInit();
+    CTIMERInit();
 
     OSTaskCreate(&appTask1TCB,                  /* Create Task 1                    */
                 "App Task1 ",
@@ -161,29 +162,33 @@ static void appStartTask(void *p_arg) {
 *****************************************************************************************/
 static void appTask1(void *p_arg){
 
-    INT8U timcntr = 0;                              /* Counter for one second flag      */
     OS_ERR os_err;
+    INT32U sw_in = 0;
+
     (void)p_arg;
     
     while(1){
-    
-        DB1_TURN_OFF();                             /* Turn off debug bit while waiting */
-    	OSTimeDly(100,OS_OPT_TIME_PERIODIC,&os_err);     /* Task period = 100ms   */
+        sw_in = SwPend(0, &os_err);
         assert(os_err == OS_ERR_NONE);
-        DB1_TURN_ON();                          /* Turn on debug bit while ready/running*/
-        if((LedEnState == GREEN_ON)||(LedEnState == BOTH_ON)){
-        	GREEN_TOGGLE();
-        }else{
-        }
-        timcntr++;
-        if(timcntr == 10){                     /* Signal Task2 every second             */
-            (void)OSTaskSemPost(&appTask2TCB,OS_OPT_POST_NONE,&os_err);
-            assert(os_err == OS_ERR_NONE);
-            timcntr = 0;
-        }else{
+
+        if(GPIO_PIN(SW2_BIT) & sw_in){
+            BIOPutStrg("[sine], ");
+            }
+            else{
+            BIOPutStrg("sine, ");
+            }
+            BIOOutDecWord(10, 2, BIO_OD_MODE_AR);  // Display minutes
+            BIOPutStrg("Hz, ");
+            BIOOutDecWord(20, 2, BIO_OD_MODE_AR);  // Display Seconds
+            BIOPutStrg(", ");
+            BIOPutStrg("pulse, ");
+            BIOOutDecWord(30, 2, BIO_OD_MODE_AR);  // Display Milliseconds
+            BIOPutStrg("Hz, ");
+            BIOOutDecWord(50, 2, BIO_OD_MODE_AR);
+            BIOPutStrg("%");
+            BIOOutCRLF();
         }
     }
-}
 
 /*****************************************************************************************
 * TASK #2
