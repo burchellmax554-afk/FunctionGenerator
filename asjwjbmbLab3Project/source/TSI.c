@@ -1,63 +1,66 @@
 #include "MCUType.h"
-#include "os.h"
+#include "FRDM_MCXN947ClkCfg.h"
+#include "FRDM_MCXN947_GPIO.h"
 #include "TSI.h"
+#include "os.h"
 
-//Prototype Functions
-static void CTIMERInit(void);
-//static void init_freemaster_lpuart(void);
-void CTIMER0_IRQHandler(void);
+volatile uint32_t touch_value = 0; // Stores the latest touch reading
 
+void TSI_Init(void) {
+    // Enable clock for TSI module
+    SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_CLKIN_ENA_FM_USBH_LPT(1);
 
+    // Configure TSI in Self-Capacitance Mode (Set TSICH to desired channel, e.g., Channel 3)
+    TSI0->CONFIG = (TSI0->CONFIG & ~TSI_CONFIG_TSICH_MASK) | TSI_CONFIG_TSICH(3);
 
-void CTIMER0_IRQHandler(void)
-{
-    /* Clear the interrupt flag.*/
-    nt_trigger();
+    // Enable End-of-Scan Interrupt
+    TSI0->GENCS = TSI_GENCS_TSIEN_MASK |  // Enable TSI module
+                  TSI_GENCS_ESOR_MASK  |  // Enable End-Of-Scan interrupt
+                  TSI_GENCS_STM_MASK;    // Hardware trigger mode
 
-    /* Clear the match interrupt flag. */
-    CTIMER0->IR |= CTIMER_IR_MR0INT(1U);
-
-    /* Add empty instructions for correct interrupt flag clearing */
-    __DSB();
-    __ISB();
+    // Enable NVIC interrupt
+    NVIC_ClearPendingIRQ(CTI0_IRQn);
+    NVIC_EnableIRQ(CTI0_IRQn);
 }
 
-static void CTIMERInit(void)
-{
-    /* Use 96 MHz clock for some of the Ctimer0. */
-    CLOCK_SetClkDiv(344, 1u);
-    CLOCK_AttachClk(kFRO12M_to_FLEXCOMM4);
+void LPTMR1_Init(void) {
+    // Enable clock for LPTMR1
+    SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_CLKIN_ENA_FM_USBH_LPT(1);
 
-    /* Enable Timer0 clock. */
-    SYSCON->AHBCLKCTRLSET[1] |= SYSCON_AHBCLKCTRL1_TIMER0_MASK;
+    // Configure LPTMR1 to trigger TSI
+    INPUTMUX->TSI_TRIG = 1;  // Set LPTMR1 as hardware trigger for TSI
 
-    /* Enable Timer0 clock reset. */
-    SYSCON->PRESETCTRLSET[1] = SYSCON_PRESETCTRL1_TIMER0_RST_MASK;             /* Set bit. */
-    while (0u == (SYSCON->PRESETCTRL1 & SYSCON_PRESETCTRL1_TIMER0_RST_MASK))   /* Wait until it reads 0b1 */
-    {
-    }
+    // Select the OSC_SYS clock and bypass prescaler
+    LPTMR1->PSR = LPTMR_PSR_PCS(3) | LPTMR_PSR_PBYP(1);
 
-    /* Clear Timer0 clock reset. */
-    SYSCON->PRESETCTRLCLR[1] = SYSCON_PRESETCTRL1_TIMER0_RST_MASK;             /* Clear bit */
-    while (SYSCON_PRESETCTRL1_TIMER0_RST_MASK ==                               /* Wait until it reads 0b0 */
-          (SYSCON->PRESETCTRL1 & SYSCON_PRESETCTRL1_TIMER0_RST_MASK))
-    {
-    }
+    // Set Compare Register for a 100ms period (adjust as needed)
+    LPTMR1->CMR = (24000000 / 10) - 1;
 
-    /* Configure match control register. */
-    CTIMER0->MCR |= CTIMER_MCR_MR0R(1U)  |   /* Enable reset of TC after it matches with MR0. */
-                    CTIMER_MCR_MR0I(1U);     /* Enable interrupt generation after TC matches with MR0. */
+    // Clear CSR and interrupt flag
+    LPTMR1->CSR = LPTMR_CSR_TCF(1);
 
-    /* Configure match register. */
-    CTIMER0->MR[0] = (nt_kernel_data.rom->time_period * CLOCK_GetFreq(8))  /* Get CTimer0 frequency for correct set Match register value. */
-                     / 1000;                 /* Set slow control loop frequency in Hz. */
+    // Enable NVIC interrupt for LPTMR1
+    NVIC_ClearPendingIRQ(LPTMR1_IRQn);
+    NVIC_EnableIRQ(LPTMR1_IRQn);
 
-    /* Configure interrupt register. */
-    CTIMER0->IR = CTIMER_IR_MR0INT_MASK;     /* Set interrupt flag for match channel 0. */
-    NVIC_SetPriority(CTIMER0_IRQn, 1U);
-    NVIC_EnableIRQ(CTIMER0_IRQn);            /* Enable LEVEL1 interrupt and update the call back function. */
-
-    /* Configure timer control register. */
-    CTIMER0->TCR |= CTIMER_TCR_CEN_MASK;     /* Start the timer counter. */
+    // Enable LPTMR1 and its interrupt
+    LPTMR1->CSR |= LPTMR_CSR_TEN(1) | LPTMR_CSR_TIE(1);
 }
 
+void TSI0_IRQHandler(void) {
+    if (TSI0->GENCS & TSI_GENCS_ESOR_MASK) {
+        // Read touch value
+        touch_value = TSI0->DATA & TSI_DATA_TSICNT_MASK;
+
+        // Clear End-of-Scan flag
+        TSI0->GENCS |= TSI_GENCS_ESOR_MASK;
+    }
+}
+
+void LPTMR1_IRQHandler(void) {
+    // Trigger TSI conversion
+    TSI0->GENCS |= TSI_GENCS_SWTS_MASK;
+
+    // Clear LPTMR interrupt flag
+    LPTMR1->CSR |= LPTMR_CSR_TCF(1);
+}

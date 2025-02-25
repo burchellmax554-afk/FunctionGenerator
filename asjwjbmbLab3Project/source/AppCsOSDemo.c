@@ -104,7 +104,8 @@ static void appStartTask(void *p_arg) {
     GpioLEDREDInit();
     GpioDBugBitsInit();
     SwInit();
-    CTIMERInit();
+    TSI_Init();
+    LPTMR1_Init();
 
     OSTaskCreate(&appTask1TCB,                  /* Create Task 1                    */
                 "App Task1 ",
