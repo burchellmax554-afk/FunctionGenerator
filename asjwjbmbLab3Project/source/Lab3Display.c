@@ -1,3 +1,4 @@
+#include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
 #include "FRDM_MCXN947ClkCfg.h"
@@ -100,6 +101,7 @@ static void appStartTask(void *p_arg) {
     GpioDBugBitsInit();
     SwInit();
     TSIInit();
+    TimerInit();
 
     OSTaskCreate(&appTaskFunctionDisplayTCB,                  /* Create Task 1                    */
                 "App Task TimerDisplay ",
