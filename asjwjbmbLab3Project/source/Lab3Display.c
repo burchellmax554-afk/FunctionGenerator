@@ -183,7 +183,7 @@ static void appTaskFunctionDisplay(void *p_arg) {
         if(cur_sense_flag == 1){
             BIOOutCRLF();
         }else{
-            BIOPutStrg("Bust");
+            BIOPutStrg("Pressed");
             BIOOutCRLF();
         }
     }
