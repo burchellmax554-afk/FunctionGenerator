@@ -212,6 +212,7 @@ void BIOOutDecWord (INT32U binword, INT8U field, BIO_OUTDEC_MODE mode){
     }
 }
 
+
 /*******************************************************************************************
 * BIOGetStrg() - Inputs a string and stores it into an array.
 *
