@@ -6,7 +6,6 @@
 #include "BasicIO.h"
 #include "app_cfg.h"
 
-
 /* Struct definition for modes */
 typedef enum {
     sine,
@@ -46,17 +45,16 @@ void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
 
 /****************************************************************************************
-* Default state setup
+* Beginning state setup (Mostly for debugging use)
 ****************************************************************************************/
-static SystemState current_state = {sine, 1000, 10, 1000, 50};  // Default state: sine wave, 1000Hz, amplitude 10, pulse freq 1000Hz, duty cycle 50%
-static SystemState previous_state = {sine, 1000, 10, 1000, 50};  // Initialize to default values
+static SystemState current_state = {sine, 0, 0, 0, 0};  // Default state: sine wave, 1000Hz, amplitude 10, pulse freq 1000Hz, duty cycle 50%
+static SystemState previous_state = {sine, 1, 0, 0, 0};  // Initialize to default values
 
 /****************************************************************************************
 * Reset Function to set back to default
 ****************************************************************************************/
 void ResetSystemState(void) {
     current_state = (SystemState) {sine, 1000, 10, 1000, 50};
-    previous_state = (SystemState) {sine, 1000, 10, 1000, 50};
 }
 
 /****************************************************************************************
@@ -167,84 +165,85 @@ static void appStartTask(void *p_arg) {
 ****************************************************************************************/
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
-
     OS_ERR os_err;
+    while (1) {
+        /* Check if the current state is any different from the previous state */
+        if (current_state.wave_form != previous_state.wave_form ||
+            current_state.sine_frequency != previous_state.sine_frequency ||
+            current_state.sine_amplitude != previous_state.sine_amplitude ||
+            current_state.pulse_frequency != previous_state.pulse_frequency ||
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
 
-    /* Check if the current state is any different from the previous state */
-    if (current_state.wave_form != previous_state.wave_form ||
-        current_state.sine_frequency != previous_state.sine_frequency ||
-        current_state.sine_amplitude != previous_state.sine_amplitude ||
-        current_state.pulse_frequency != previous_state.pulse_frequency ||
-        current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+            /* Display wave information using the current_state struct */
+            switch (current_state.wave_form) {
+                case sine:
+                    BIOPutStrg("\r[sine], ");
+                    break;
+                case pulse:
+                    BIOPutStrg("\rpulse, ");
+                    break;
+                default:
+                    BIOPutStrg("\rInvalid Mode! ");
+            }
 
-        /* Display wave information using the current_state struct */
-        switch (current_state.wave_form) {
-            case sine:
-                BIOPutStrg("[sine], ");
-                break;
-            case pulse:
-                BIOPutStrg("pulse, ");
-                break;
-            default:
-                BIOPutStrg("Invalid Mode! ");
+            /* Calculate the number of digits dynamically */
+            INT8U sine_frequency_digits = GetNumberOfDigits(current_state.sine_frequency);
+            INT8U amplitude_digits = GetNumberOfDigits(current_state.sine_amplitude);
+
+            /* Display sine frequency, amplitude using BIOOutDecWord */
+            BIOOutDecWord(current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOPutStrg("Hz, ");
+            BIOOutDecWord(current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOPutStrg(", ");
+
+            /* Display pulse mode, pulse frequency, and duty cycle */
+            switch (current_state.wave_form) {
+                case sine:
+                    BIOPutStrg("pulse, ");
+                    break;
+                case pulse:
+                    BIOPutStrg("[pulse], ");
+                    break;
+                default:
+                    BIOPutStrg("Invalid Mode! ");
+            }
+
+            /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
+            INT8U pulse_frequency_digits = GetNumberOfDigits(current_state.pulse_frequency);
+            INT8U duty_cycle_digits = GetNumberOfDigits(current_state.pulse_duty_cycle);
+
+            /* Display pulse frequency and duty cycle using BIOOutDecWord */
+            BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOPutStrg("Hz, ");
+            BIOOutDecWord(current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOPutStrg("%");
+
+            /* Save current state to previous_state for next iteration */
+            previous_state = current_state;
         }
 
-        /* Calculate the number of digits dynamically */
-        INT8U sine_frequency_digits = GetNumberOfDigits(current_state.sine_frequency);
-        INT8U amplitude_digits = GetNumberOfDigits(current_state.sine_amplitude);
-
-        /* Display sine frequency, amplitude using BIOOutDecWord */
-        BIOOutDecWord(current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
-        BIOPutStrg("Hz, ");
-        BIOOutDecWord(current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
-        BIOPutStrg(", ");
-
-        /* Display pulse mode, pulse frequency, and duty cycle */
-        switch (current_state.wave_form) {
-            case sine:
-                BIOPutStrg("pulse, ");
-                break;
-            case pulse:
-                BIOPutStrg("[pulse], ");
-                break;
-            default:
-                BIOPutStrg("Invalid Mode! ");
-        }
-
-        /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
-        INT8U pulse_frequency_digits = GetNumberOfDigits(current_state.pulse_frequency);
-        INT8U duty_cycle_digits = GetNumberOfDigits(current_state.pulse_duty_cycle);
-
-        /* Display pulse frequency and duty cycle using BIOOutDecWord */
-        BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
-        BIOPutStrg("Hz, ");
-        BIOOutDecWord(current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
-        BIOPutStrg("%");
-
-        /* Save current state to previous_state for next iteration */
-        previous_state = current_state;
+        /* Delay 250ms before next update */
+        OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
+        assert(os_err == OS_ERR_NONE);
     }
-
-    /* Delay 250ms before next update */
-    OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
-    assert(os_err == OS_ERR_NONE);
 }
 
 
-static void appTaskStateManagement(void *p_arg) {
-    (void)p_arg;  /* Avoid unused parameter warning */
-    OS_ERR os_err;
-    INT32U sw_in = 0; /* Initialize switch to 0 */
 
+static void appTaskStateManagement(void *p_arg) {
+    OS_ERR os_err;
+    SW_T sw_in = 0; /* Initialize switch to 0 */
+    (void)p_arg;  /* Avoid unused parameter warning */
     while(1) {
         sw_in = SwPend(0, &os_err);  /* Wait for switch input */
         assert(os_err == OS_ERR_NONE);
 
         /* Handle switch presses: */
-        if (GPIO_PIN(SW2_BIT) & sw_in) {  /* SW2 is pressed (active-low) */
+        if (sw_in == SW2) {  /* SW2 is pressed (active-low) */
             ResetSystemState();  // Reset the system state
-            OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Debounce the switch
         }
     }
 }
+
+
 
