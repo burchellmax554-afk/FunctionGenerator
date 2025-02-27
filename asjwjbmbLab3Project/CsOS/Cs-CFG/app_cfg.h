@@ -46,11 +46,13 @@
 *********************************************************************************************************
 */
 
-#define APP_CFG_TASK_START_PRIO     6u
-#define APP_CFG_TASK1_PRIO          8u
-#define APP_CFG_TASK2_PRIO          10u
-#define APP_CFG_TASK3_PRIO          12u
-#define APP_CFG_SW_TASK_PRIO		14u
+#define APP_CFG_TASK_START_PRIO            6u
+#define APP_CFG_TASK1_PRIO                 8u
+#define APP_CFG_TASK2_PRIO                 10u
+#define APP_CFG_TASK3_PRIO                 12u
+#define APP_CFG_SW_TASK_PRIO		       14u
+#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 8u /*Define variable names to better match lab 2 over lab 1*/
+
 
 /*
 *********************************************************************************************************
@@ -58,10 +60,11 @@
 *********************************************************************************************************
 */
 
-#define APP_CFG_TASK_START_STK_SIZE 128u
-#define APP_CFG_TASK1_STK_SIZE      128u
-#define APP_CFG_TASK2_STK_SIZE      128u
-#define APP_CFG_TASK3_STK_SIZE      128u
-#define APP_CFG_SW_TASK_STK_SIZE	128u
+#define APP_CFG_TASK_START_STK_SIZE            128u
+#define APP_CFG_TASK1_STK_SIZE                 128u
+#define APP_CFG_TASK2_STK_SIZE                 128u
+#define APP_CFG_TASK3_STK_SIZE                 128u
+#define APP_CFG_SW_TASK_STK_SIZE	           128u
+#define APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE 128u /*Define variable names to better match lab 3 over lab 1*/
 
 #endif

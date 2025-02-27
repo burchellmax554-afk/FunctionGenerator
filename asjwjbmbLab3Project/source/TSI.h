@@ -4,10 +4,10 @@
 #include "MCUType.h"
 #include "os.h"
 
-void TSI0_IRQHandler(void);
-void TSI_Init(void);
-void LPTMR1_Init(void);
-void LPTMR1_IRQHandler(void);
+void TSIInit(void);
+static void tsiChCalibration(void);
+void TSITask(void);
+INT8U TSITouchGet(void);
 
 /* Function prototypes */
 
