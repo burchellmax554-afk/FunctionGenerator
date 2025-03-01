@@ -1,3 +1,4 @@
+#include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
 #include "FRDM_MCXN947ClkCfg.h"
@@ -5,6 +6,8 @@
 #include "CsOS_SW.h"
 #include "BasicIO.h"
 #include "app_cfg.h"
+#include "TSI.h"
+#include "sineTable.h"
 
 /* Struct definition for modes */
 typedef enum {
@@ -21,26 +24,29 @@ typedef struct {
     INT32U pulse_duty_cycle;       // Duty cycle for pulse train (%)
 } SystemState;
 
-
 /****************************************************************************************
 * Allocate task control blocks
 ****************************************************************************************/
 static OS_TCB appTaskStartTCB;
 static OS_TCB appTaskFunctionDisplayTCB;
 static OS_TCB appTaskStateManagementTCB;
+static OS_TCB appTaskTSITCB;
 /****************************************************************************************
 * Allocate task stack space.
 ****************************************************************************************/
 static CPU_STK appTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE];
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
+static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
 ****************************************************************************************/
 static void appStartTask(void *p_arg);
 static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
+static void appTaskTSI(void *p_arg);
 
+static void TSISwap(void);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
 
@@ -63,7 +69,7 @@ void ResetSystemState(void) {
 INT8U GetNumberOfDigits(INT32U num) {
     INT8U num_digits = 0;
     if (num == 0) {
-        return 1;
+        return 1;  /* Special case: 0 has 1 digit */
     }
 
     while (num > 0) {
@@ -72,7 +78,6 @@ INT8U GetNumberOfDigits(INT32U num) {
     }
     return num_digits;
 }
-
 
 /****************************************************************************************
 * main()
@@ -109,6 +114,7 @@ void main(void) {
     assert(0);						/* Should never get here */
 }
 
+
 /****************************************************************************************
 * STARTUP TASK
 ****************************************************************************************/
@@ -123,9 +129,11 @@ static void appStartTask(void *p_arg) {
     GpioLEDREDInit();
     GpioDBugBitsInit();
     SwInit();
+    TSIInit();
+    TimerInit();
 
     OSTaskCreate(&appTaskFunctionDisplayTCB,                  /* Create Task 1                    */
-                "App Task FunctionDisplay ",
+                "App Task TimerDisplay ",
                 appTaskFunctionDisplay,
                 (void *) 0,
                 APP_CFG_TASK_FUNCTION_DISPLAY_PRIO,
@@ -154,9 +162,39 @@ static void appStartTask(void *p_arg) {
                 &os_err);
     assert(os_err == OS_ERR_NONE);
 
+    OSTaskCreate(&appTaskTSITCB,                  /* Create Task 1                    */
+                "App Task TSIManagement ",
+                appTaskTSI,
+                (void *) 0,
+                APP_CFG_TASK_TSI_PRIO,
+                &appTaskTSIStk[0],
+                (APP_CFG_TASK_TSI_STK_SIZE / 10u),
+                APP_CFG_TASK_TSI_STK_SIZE,
+                0,
+                0,
+                (void *) 0,
+                (OS_OPT_TASK_NONE),
+                &os_err);
+    assert(os_err == OS_ERR_NONE);
 
     OSTaskDel((OS_TCB *)0, &os_err); /* Delete start task */
     assert(os_err == OS_ERR_NONE);
+}
+
+/****************************************************************************************
+* Wave swap function
+****************************************************************************************/
+static void TSISwap(void){
+    switch (current_state.wave_form){
+    case sine:
+    	current_state.wave_form = pulse;
+        break;
+    case pulse:
+        current_state.wave_form = sine;
+        break;
+    default:
+        current_state. wave_form = sine;
+    }
 }
 
 
@@ -166,6 +204,7 @@ static void appStartTask(void *p_arg) {
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
+    INT16U cur_sense_flag;
     while (1) {
         /* Check if the current state is any different from the previous state */
         if (current_state.wave_form != previous_state.wave_form ||
@@ -221,13 +260,18 @@ static void appTaskFunctionDisplay(void *p_arg) {
             /* Save current state to previous_state for next iteration */
             previous_state = current_state;
         }
+    	TSITask();
+        cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
+        if (cur_sense_flag == 1) {
+            TSISwap();  // Swap waveforms if touch is detected
+        }
+        assert(os_err == OS_ERR_NONE);
 
         /* Delay 250ms before next update */
         OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
         assert(os_err == OS_ERR_NONE);
     }
 }
-
 
 
 static void appTaskStateManagement(void *p_arg) {
@@ -242,6 +286,21 @@ static void appTaskStateManagement(void *p_arg) {
         if (sw_in == SW2) {  /* SW2 is pressed (active-low) */
             ResetSystemState();  // Reset the system state
         }
+    }
+}
+
+static void appTaskTSI(void *p_arg) {
+    OS_ERR os_err;
+    INT16U cur_sense_flag;
+    (void)p_arg;
+
+    while (1) {
+    	TSITask();
+        cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
+        if (cur_sense_flag == 1) {
+            TSISwap();  // Swap waveforms if touch is detected
+        }
+        assert(os_err == OS_ERR_NONE);
     }
 }
 
