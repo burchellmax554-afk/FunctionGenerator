@@ -60,7 +60,7 @@ void LPTMR0_IRQHandler(void){
 
     // Purely to check timer
     checking++;
-    BIOPutStrg("\n\r Check");
+
 
 
 }

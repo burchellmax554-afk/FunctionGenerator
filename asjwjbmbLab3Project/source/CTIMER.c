@@ -1,8 +1,9 @@
 /*
  * CTIMER.c
  *
- *  Created on: Mar 2, 2025, Last modified 02MAR2025
- *      Author: John Brown
+ *  Last modified 02MAR2025 by John Brown
+ *      Authors: Todd Morton, Sam Johnson
+ *
  */
 
 
@@ -16,31 +17,19 @@
 ****************************************************************************************/
 #include "MCUType.h"
 #include "FRDM_MCXN947ClkCfg.h"
+#include "CTIMER.h"
+#include "BasicIO.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
-void ctInit(void);
+/*******************************************************************************/
+
 
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-INT32U periodValue;
-INT32U dutyValue;
-/*******************************************************************************
- * main code
- ******************************************************************************/
-void main(void){
-
-    FRDM_MCXN947InitBootClock();
-    ctInit();
-
-    while(1){
-    }
-}
-
+INT32U periodValue; // Period value
+INT32U dutyValue = 50; // Duty cycle (default is 50)
 /***********************************************************************************
  * Configure CTIMER0 to generate a 1kHz square wave on P0_11 using pll0_clk (150MHz)
  * Sam Johnson
@@ -73,16 +62,19 @@ void ctInit(void){
    /* Enable CTIMER0 */
    CTIMER0->TCR |= CTIMER_TCR_CEN(1);
 
+
 }
 
+/**********/
+// Function to update frequency
 void ctUpdateFrequency(INT32U freq){
-    if (freq_hz == 0) return; // Prevent zero division
+    if (freq == 0) return; // Prevent zero division
 
     periodValue = 150000000 / freq;
 
     // Update Value
     CTIMER0->MR[0] = CTIMER_MR_MATCH(periodValue - 1); //
-    CTIMER0->MR[1] = CTIMER_MR_MATCH(periodValue * dutyValue); // Duty Cycle change
+    CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty Cycle change
 
     // Reset counter to apply
     CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
@@ -90,11 +82,13 @@ void ctUpdateFrequency(INT32U freq){
     CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
 }
 
+/**********/
+// Function to update duty cycle
 void ctUpdateDutyCycle(INT32U dutyCycle){
 
-    INT32U dutyValue = dutyCycle; // Save the duty cycle
+    dutyValue = dutyCycle; // Save the duty cycle
 
-    CTIMER0->MR[1] = CTIMER_MR_MATCH(periodValue * dutyValue); // Duty cycle change
+    CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyCycle) / 100); // Duty cycle change
 
     // Reset counter to apply
     CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
