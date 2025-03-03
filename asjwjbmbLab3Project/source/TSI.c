@@ -11,6 +11,7 @@
 #include "FRDM_MCXN947_GPIO.h"
 #include "TSI.h"
 #include "BasicIO.h"
+#include "os.h"
 
 typedef struct{
     INT16U baseline;
@@ -19,10 +20,11 @@ typedef struct{
 }TOUCH_LEVEL_T;
 
 
-#define TOUCH_OFFSET  0xA000U    // Touch offset from baseline
+#define TOUCH_OFFSET  0xF000U    // Touch offset from baseline
 
 static TOUCH_LEVEL_T tsiLevels;
 static INT8U tsiFlag;
+static void tsiChCalibration(void);
 
 /*****************************************************************************************
  * TSI0Init: Initializes TSI0 module
@@ -57,13 +59,12 @@ void TSIInit(void){
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
  ********************************************************************************/
-static void tsiChCalibration(void){
-    TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
-    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} //wait for scan to finish
-    TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
+static void tsiChCalibration(void) {
+    TSI0->GENCS |= TSI_GENCS_SWTS(1);             // start a scan sequence
+    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} // wait for scan to finish
+    TSI0->DATA |= TSI_DATA_EOSF(1);    // Clear flag
     tsiLevels.baseline = (INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-    tsiLevels.threshold = tsiLevels.baseline +
-                                         tsiLevels.offset;
+    tsiLevels.threshold = tsiLevels.baseline + tsiLevels.offset;
 }
 
 /********************************************************************************
@@ -83,11 +84,8 @@ void TSITask(void){
 
     TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
     /* Send TSICNT to terminal to help tune settings. For debugging only */
-
-//Keeping this here for future use, DELETE WHEN PUSHING RELEASEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
+   // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
     //BIOWrite('\r');
-
     /* Process channel */
     if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
         tsiFlag = 1;
@@ -105,4 +103,5 @@ INT8U TSITouchGet(void){
     tsiFlag = 0;
     return tflag;
 }
+
 

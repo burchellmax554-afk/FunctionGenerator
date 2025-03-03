@@ -7,8 +7,7 @@
 void TSIInit(void);
 void TSITask(void);
 INT8U TSITouchGet(void);
-static void tsiChCalibration(void);
-/* Function prototypes */
 
 #endif /* TSI_H_ */
+
 

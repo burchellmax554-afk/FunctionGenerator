@@ -8,21 +8,7 @@
 #include "app_cfg.h"
 #include "TSI.h"
 #include "sineTable.h"
-
-/* Struct definition for modes */
-typedef enum {
-    sine,
-    pulse
-} WAVE_FORM;
-
-/* Struct to hold system state */
-typedef struct {
-    WAVE_FORM wave_form;           // Waveform type (sine or pulse)
-    INT32U sine_frequency;         // Frequency for sinewave (Hz)
-    INT32U sine_amplitude;         // Amplitude for sinewave
-    INT32U pulse_frequency;        // Frequency for pulse train (Hz)
-    INT32U pulse_duty_cycle;       // Duty cycle for pulse train (%)
-} SystemState;
+#include "state.h"
 
 /****************************************************************************************
 * Allocate task control blocks
@@ -50,11 +36,6 @@ static void TSISwap(void);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
 
-/****************************************************************************************
-* Beginning state setup (Mostly for debugging use)
-****************************************************************************************/
-static SystemState current_state = {sine, 0, 0, 0, 0};  // Default state: sine wave, 1000Hz, amplitude 10, pulse freq 1000Hz, duty cycle 50%
-static SystemState previous_state = {sine, 1, 0, 0, 0};  // Initialize to default values
 
 /****************************************************************************************
 * Reset Function to set back to default
@@ -204,7 +185,6 @@ static void TSISwap(void){
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
-    INT16U cur_sense_flag;
     while (1) {
         /* Check if the current state is any different from the previous state */
         if (current_state.wave_form != previous_state.wave_form ||
@@ -212,6 +192,7 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.sine_amplitude != previous_state.sine_amplitude ||
             current_state.pulse_frequency != previous_state.pulse_frequency ||
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+
 
             /* Display wave information using the current_state struct */
             switch (current_state.wave_form) {
@@ -260,16 +241,10 @@ static void appTaskFunctionDisplay(void *p_arg) {
             /* Save current state to previous_state for next iteration */
             previous_state = current_state;
         }
-    	TSITask();
-        cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
-        if (cur_sense_flag == 1) {
-            TSISwap();  // Swap waveforms if touch is detected
-        }
-        assert(os_err == OS_ERR_NONE);
-
         /* Delay 250ms before next update */
-        OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
-        assert(os_err == OS_ERR_NONE);
+    OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
+    assert(os_err == OS_ERR_NONE);
+
     }
 }
 
@@ -290,9 +265,9 @@ static void appTaskStateManagement(void *p_arg) {
 }
 
 static void appTaskTSI(void *p_arg) {
-    OS_ERR os_err;
     INT16U cur_sense_flag;
     (void)p_arg;
+    ResetSystemState();
 
     while (1) {
     	TSITask();
@@ -300,9 +275,10 @@ static void appTaskTSI(void *p_arg) {
         if (cur_sense_flag == 1) {
             TSISwap();  // Swap waveforms if touch is detected
         }
-        assert(os_err == OS_ERR_NONE);
     }
 }
+
+
 
 
 
