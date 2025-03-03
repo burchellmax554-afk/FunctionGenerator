@@ -27,6 +27,8 @@ void ctInit(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
+INT32U periodValue;
+INT32U dutyValue;
 /*******************************************************************************
  * main code
  ******************************************************************************/
@@ -73,20 +75,31 @@ void ctInit(void){
 
 }
 
-void ctUpdateFrequency(uint32_t freq){
-    if (freq == 0) return; /* Prevent division by zero */
+void ctUpdateFrequency(INT32U freq){
+    if (freq_hz == 0) return; // Prevent zero division
 
-    uint32_t period_us = 1000000 / freq_hz; /* Convert frequency to period in ms */
-    uint32_t match_value = (CTIMER_CLK_FREQ / 1000000) * period_us - 1;
+    periodValue = 150000000 / freq;
 
-    /* Update match registers */
-    CTIMER0->MR[0] = CTIMER_MR_MATCH(match_value);
-    CTIMER0->MR[1] = CTIMER_MR_MATCH(match_value / 2); /* 50% duty cycle */
+    // Update Value
+    CTIMER0->MR[0] = CTIMER_MR_MATCH(periodValue - 1); //
+    CTIMER0->MR[1] = CTIMER_MR_MATCH(periodValue * dutyValue); // Duty Cycle change
 
-    /* Reset counter to apply changes */
-    CTIMER0->TCR |= CTIMER_TCR_CEN(0); /* Disable timer */
-    CTIMER0->TC = 0; /* Reset counter */
-    CTIMER0->TCR |= CTIMER_TCR_CEN(1); /* Re-enable timer */
+    // Reset counter to apply
+    CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
+    CTIMER0->TC = 0; // Reset counter
+    CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
+}
+
+void ctUpdateDutyCycle(INT32U dutyCycle){
+
+    INT32U dutyValue = dutyCycle; // Save the duty cycle
+
+    CTIMER0->MR[1] = CTIMER_MR_MATCH(periodValue * dutyValue); // Duty cycle change
+
+    // Reset counter to apply
+    CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
+    CTIMER0->TC = 0; // Reset counter
+    CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
 }
 
 
