@@ -194,13 +194,13 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
 
 
-            /* Display wave information using the current_state struct */
+
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
                     break;
                 case pulse:
-                    BIOPutStrg("\rpulse, ");
+                    BIOPutStrg("\rsine, ");
                     break;
                 default:
                     BIOPutStrg("\rInvalid Mode! ");
@@ -219,13 +219,13 @@ static void appTaskFunctionDisplay(void *p_arg) {
             /* Display pulse mode, pulse frequency, and duty cycle */
             switch (current_state.wave_form) {
                 case sine:
-                    BIOPutStrg("pulse, ");
-                    break;
+                     BIOPutStrg("pulse, ");
+                     break;
                 case pulse:
-                    BIOPutStrg("[pulse], ");
-                    break;
+                     BIOPutStrg("[pulse], ");
+                     break;
                 default:
-                    BIOPutStrg("Invalid Mode! ");
+                     BIOPutStrg("Invalid Mode! ");
             }
 
             /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
@@ -277,8 +277,5 @@ static void appTaskTSI(void *p_arg) {
         }
     }
 }
-
-
-
 
 
