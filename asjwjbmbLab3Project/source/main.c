@@ -16,23 +16,18 @@
 static OS_TCB appTaskStartTCB;
 static OS_TCB appTaskFunctionDisplayTCB;
 static OS_TCB appTaskStateManagementTCB;
-static OS_TCB appTaskTSITCB;
 /****************************************************************************************
 * Allocate task stack space.
 ****************************************************************************************/
 static CPU_STK appTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE];
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
-static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
 ****************************************************************************************/
 static void appStartTask(void *p_arg);
 static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
-static void appTaskTSI(void *p_arg);
-
-static void TSISwap(void);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
 
@@ -143,40 +138,10 @@ static void appStartTask(void *p_arg) {
                 &os_err);
     assert(os_err == OS_ERR_NONE);
 
-    OSTaskCreate(&appTaskTSITCB,                  /* Create Task 1                    */
-                "App Task TSIManagement ",
-                appTaskTSI,
-                (void *) 0,
-                APP_CFG_TASK_TSI_PRIO,
-                &appTaskTSIStk[0],
-                (APP_CFG_TASK_TSI_STK_SIZE / 10u),
-                APP_CFG_TASK_TSI_STK_SIZE,
-                0,
-                0,
-                (void *) 0,
-                (OS_OPT_TASK_NONE),
-                &os_err);
-    assert(os_err == OS_ERR_NONE);
-
     OSTaskDel((OS_TCB *)0, &os_err); /* Delete start task */
     assert(os_err == OS_ERR_NONE);
 }
 
-/****************************************************************************************
-* Wave swap function
-****************************************************************************************/
-static void TSISwap(void){
-    switch (current_state.wave_form){
-    case sine:
-    	current_state.wave_form = pulse;
-        break;
-    case pulse:
-        current_state.wave_form = sine;
-        break;
-    default:
-        current_state. wave_form = sine;
-    }
-}
 
 
 /****************************************************************************************
@@ -194,13 +159,13 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
 
 
-            /* Display wave information using the current_state struct */
+
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
                     break;
                 case pulse:
-                    BIOPutStrg("\rpulse, ");
+                    BIOPutStrg("\rsine, ");
                     break;
                 default:
                     BIOPutStrg("\rInvalid Mode! ");
@@ -219,13 +184,13 @@ static void appTaskFunctionDisplay(void *p_arg) {
             /* Display pulse mode, pulse frequency, and duty cycle */
             switch (current_state.wave_form) {
                 case sine:
-                    BIOPutStrg("pulse, ");
-                    break;
+                     BIOPutStrg("pulse, ");
+                     break;
                 case pulse:
-                    BIOPutStrg("[pulse], ");
-                    break;
+                     BIOPutStrg("[pulse], ");
+                     break;
                 default:
-                    BIOPutStrg("Invalid Mode! ");
+                     BIOPutStrg("Invalid Mode! ");
             }
 
             /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
@@ -263,22 +228,3 @@ static void appTaskStateManagement(void *p_arg) {
         }
     }
 }
-
-static void appTaskTSI(void *p_arg) {
-    INT16U cur_sense_flag;
-    (void)p_arg;
-    ResetSystemState();
-
-    while (1) {
-    	TSITask();
-        cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
-        if (cur_sense_flag == 1) {
-            TSISwap();  // Swap waveforms if touch is detected
-        }
-    }
-}
-
-
-
-
-
