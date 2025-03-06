@@ -186,7 +186,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
 
     while(1){
-        TSITask();
         cur_sense_flag = TSITouchGet();
         if(cur_sense_flag == 1){
             BIOOutCRLF();
