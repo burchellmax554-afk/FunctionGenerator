@@ -8,6 +8,7 @@
 #include "app_cfg.h"
 #include "TSI.h"
 #include "sineTable.h"
+#include "CTIMER.h"
 /* Struct definition for modes */
 typedef enum {
     sine,
@@ -57,7 +58,11 @@ void main(void) {
 
     OS_ERR  os_err;
 
+
+
+
     FRDM_MCXN947InitBootClock();
+    ctInit();
     BIOOpen(BIO_BIT_RATE_115200);	/* Startup BasicIO for asserts */
 
     CPU_IntDis();               /* Disable all interrupts, OS will enable them  */
@@ -83,6 +88,7 @@ void main(void) {
 
     OSStart(&os_err);               /* Start multitasking (i.e. give control to uC/OS)    */
     assert(0);						/* Should never get here */
+
 }
 
 
@@ -180,7 +186,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
 
     while(1){
-        TSITask();
         cur_sense_flag = TSITouchGet();
         if(cur_sense_flag == 1){
             BIOOutCRLF();
