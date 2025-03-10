@@ -7,13 +7,17 @@
 /*
  *
  */
+#include <Timer.h>
 #include "MCUType.h"
-#include "FRDM_MCXN947_GPIO.h"
-#include "TSI.h"
-#include "BasicIO.h"
 #include "os.h"
+#include "FRDM_MCXN947ClkCfg.h"
+#include "FRDM_MCXN947_GPIO.h"
 #include "CsOS_SW.h"
+#include "BasicIO.h"
 #include "app_cfg.h"
+#include "TSI.h"
+#include "sineTable.h"
+#include "state.h"
 
 typedef struct{
     INT16U baseline;
@@ -125,4 +129,18 @@ INT8U TSITouchGet(void){
     return tflag;
 }
 
-
+/****************************************************************************************
+* Wave swap function
+****************************************************************************************/
+static void TSISwap(void){
+    switch (current_state.wave_form){
+    case sine:
+    	current_state.wave_form = pulse;
+        break;
+    case pulse:
+        current_state.wave_form = sine;
+        break;
+    default:
+        current_state. wave_form = sine;
+    }
+}

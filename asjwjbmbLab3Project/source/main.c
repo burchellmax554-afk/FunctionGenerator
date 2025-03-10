@@ -138,40 +138,10 @@ static void appStartTask(void *p_arg) {
                 &os_err);
     assert(os_err == OS_ERR_NONE);
 
-    OSTaskCreate(&appTaskTSITCB,                  /* Create Task 1                    */
-                "App Task TSIManagement ",
-                appTaskTSI,
-                (void *) 0,
-                APP_CFG_TASK_TSI_PRIO,
-                &appTaskTSIStk[0],
-                (APP_CFG_TASK_TSI_STK_SIZE / 10u),
-                APP_CFG_TASK_TSI_STK_SIZE,
-                0,
-                0,
-                (void *) 0,
-                (OS_OPT_TASK_NONE),
-                &os_err);
-    assert(os_err == OS_ERR_NONE);
-
     OSTaskDel((OS_TCB *)0, &os_err); /* Delete start task */
     assert(os_err == OS_ERR_NONE);
 }
 
-/****************************************************************************************
-* Wave swap function
-****************************************************************************************/
-static void TSISwap(void){
-    switch (current_state.wave_form){
-    case sine:
-    	current_state.wave_form = pulse;
-        break;
-    case pulse:
-        current_state.wave_form = sine;
-        break;
-    default:
-        current_state. wave_form = sine;
-    }
-}
 
 
 /****************************************************************************************
