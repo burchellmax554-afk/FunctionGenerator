@@ -9,7 +9,6 @@
 #include "os.h"
 #include "FRDM_MCXN947_GPIO.h"
 #include "DACDMA.h"
-#include "sineTable.h"
 #include "assert.h"
 
 #define WAVE_SAMPLES_PER_BLOCK 91
