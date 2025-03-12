@@ -30,9 +30,9 @@ typedef struct{
 
 static TOUCH_LEVEL_T tsiLevels;
 static INT8U tsiFlag;
-static void tsiChCalibration(void);
-static void appTaskTSI(void *p_arg);
-static void TSISwap(void);
+void appTaskTSI(void *p_arg);
+
+/*?????*/
 static OS_TCB appTaskTSITCB;
 static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /*****************************************************************************************
@@ -68,7 +68,7 @@ void TSIInit(void){
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
  ********************************************************************************/
-static void tsiChCalibration(void){
+void tsiChCalibration(void){
     TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
     while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} //wait for scan to finish
     TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
@@ -107,7 +107,7 @@ void TSITask(void){
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
  ********************************************************************************/
-static void tsiChCalibration(void) {
+void tsiChCalibration(void) {
     TSI0->GENCS |= TSI_GENCS_SWTS(1);             // start a scan sequence
     while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} // wait for scan to finish
     TSI0->DATA |= TSI_DATA_EOSF(1);    // Clear flag

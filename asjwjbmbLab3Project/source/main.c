@@ -21,6 +21,7 @@ static OS_TCB appTaskStateManagementTCB;
 ****************************************************************************************/
 static CPU_STK appTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE];
+/*Here*/
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
@@ -30,6 +31,7 @@ static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
+void appTaskTSI(void *p_arg);
 
 
 /****************************************************************************************
@@ -127,6 +129,7 @@ static void appStartTask(void *p_arg) {
                 "App Task StateManagement ",
                 appTaskStateManagement,
                 (void *) 0,
+/*Here*/
                 APP_CFG_TASK_STATE_MANAGEMENT_PRIO,
                 &appTaskStateManagementStk[0],
                 (APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE / 10u),
@@ -229,7 +232,7 @@ static void appTaskStateManagement(void *p_arg) {
     }
 }
 
-static void appTaskTSI(void *p_arg) {
+void appTaskTSI(void *p_arg) {
     INT16U cur_sense_flag;
     (void)p_arg;
     ResetSystemState();
@@ -248,6 +251,7 @@ static void appTaskTSI(void *p_arg) {
        // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
         //BIOWrite('\r');
         /* Process channel */
+/*Here*/
         if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
             tsiFlag = 1;
         }else{

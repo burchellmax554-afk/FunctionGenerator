@@ -5,8 +5,9 @@
 #include "os.h"
 
 void TSIInit(void);
-static void tsiChCalibration(void);
+void tsiChCalibration(void);
 void TSITask(void);
+void TSISwap(void);
 INT8U TSITouchGet(void);
 
 /* Function prototypes */
