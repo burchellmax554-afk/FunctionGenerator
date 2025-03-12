@@ -16,7 +16,6 @@
 #include "BasicIO.h"
 #include "app_cfg.h"
 #include "TSI.h"
-#include "sineTable.h"
 #include "state.h"
 
 typedef struct{
