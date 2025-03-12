@@ -62,28 +62,28 @@ void TSIInit(void){
     /* Enable TSI and calibrate */
     TSI0->GENCS |= TSI_GENCS_TSIEN(1);
     tsiChCalibration();
-
-    OSTaskCreate(&appTaskTSITCB,                  /* Create Task 1                    */
-                    "App Task TSI",
-                    appTaskFunctionDisplay,
-                    (void *) 0,
-                    APP_CFG_TASK_TSI_PRIO,
-                    &appTaskTSIStk[0],
-                    (APP_CFG_TASK_TSI_STK_SIZE / 10u),
-                    APP_CFG_TASK_TSI_STK_SIZE,
-                    0,
-                    0,
-                    (void *) 0,
-                    (OS_OPT_TASK_NONE),
-                    &os_err);
-    assert(os_err == OS_ERR_NONE);
-
-    //create tsi task
-    // tsi task is the only os task the rest can stay as regular function
-    // tsi touch get is probably not needed
 }
 
-static void TaskTSI(void *parg){
+/********************************************************************************
+ *   tsiCalibration: Calibration to find non-touch baseline
+ *                   Note - the sensor must not be pressed when this is executed.
+ ********************************************************************************/
+static void tsiChCalibration(void){
+    TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
+    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} //wait for scan to finish
+    TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
+    tsiLevels.baseline = (INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK);
+    tsiLevels.threshold = tsiLevels.baseline +
+                                         tsiLevels.offset;
+}
+
+/********************************************************************************
+ *   TSITask: Cooperative task for timeslice scheduler
+ *            Blocks for ~6ms
+ *            In order to not block the task period should be > 6ms.
+ *            To not miss a press, the task period should be < ~25ms.
+  ********************************************************************************/
+void TSITask(void){
 
     DB0_TURN_ON(); /* debug bit measures sensor scan time */
     /*start a scan sequence */
@@ -94,11 +94,8 @@ static void TaskTSI(void *parg){
 
     TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
     /* Send TSICNT to terminal to help tune settings. For debugging only */
-
-//Keeping this here for future use, DELETE WHEN PUSHING RELEASEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
+   // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
     //BIOWrite('\r');
-
     /* Process channel */
     if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
         tsiFlag = 1;
