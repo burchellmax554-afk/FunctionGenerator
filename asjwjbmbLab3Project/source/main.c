@@ -31,7 +31,7 @@ static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
-void appTaskTSI(void *p_arg);
+void main_funct(void *p_arg);
 
 
 /****************************************************************************************
@@ -216,7 +216,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
     }
 }
 
-
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
     SW_T sw_in = 0; /* Initialize switch to 0 */
@@ -232,35 +231,18 @@ static void appTaskStateManagement(void *p_arg) {
     }
 }
 
-void appTaskTSI(void *p_arg) {
+void main_funct(void *p_arg) {
     INT16U cur_sense_flag;
+
     (void)p_arg;
     ResetSystemState();
 
     while (1) {
     	// OSTDely
-        DB0_TURN_ON(); /* debug bit measures sensor scan time */
-        /*start a scan sequence */
-        TSI0->GENCS |= TSI_GENCS_SWTS(1);
-        /* wait for scan to finish */
-        while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){}
-        DB0_TURN_OFF();
-
-        TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-        /* Send TSICNT to terminal to help tune settings. For debugging only */
-       // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-        //BIOWrite('\r');
-        /* Process channel */
-/*Here*/
-        if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
-            tsiFlag = 1;
-        }else{
-        }
-    }
         cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
         if (cur_sense_flag == 1) {
             TSISwap();  // Swap waveforms if touch is detected
-
+        }
       }
 }
 

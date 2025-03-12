@@ -33,8 +33,6 @@ static INT8U tsiFlag;
 void appTaskTSI(void *p_arg);
 
 /*?????*/
-static OS_TCB appTaskTSITCB;
-static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /*****************************************************************************************
  * TSI0Init: Initializes TSI0 module
  * Notes:
@@ -62,19 +60,6 @@ void TSIInit(void){
     /* Enable TSI and calibrate */
     TSI0->GENCS |= TSI_GENCS_TSIEN(1);
     tsiChCalibration();
-}
-
-/********************************************************************************
- *   tsiCalibration: Calibration to find non-touch baseline
- *                   Note - the sensor must not be pressed when this is executed.
- ********************************************************************************/
-void tsiChCalibration(void){
-    TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
-    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} //wait for scan to finish
-    TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-    tsiLevels.baseline = (INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-    tsiLevels.threshold = tsiLevels.baseline +
-                                         tsiLevels.offset;
 }
 
 /********************************************************************************

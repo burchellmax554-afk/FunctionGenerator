@@ -59,7 +59,7 @@ void LPTMR0_IRQHandler(void){
     /* Clear Timer Compare Flag */
     LPTMR0->CSR |= LPTMR_CSR_TCF(1);
 
-    appTaskTSI();
+    TSITask();
 
 
 
