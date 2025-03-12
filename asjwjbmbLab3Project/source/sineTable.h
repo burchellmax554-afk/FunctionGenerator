@@ -9,7 +9,8 @@
 
 #ifndef SINETABLE_H_
 #define SINETABLE_H_
-
+void convert_sine_to_pulse_wave(void);
+void table_select(void);
 
 #endif /* SINETABLE_H_ */
 
