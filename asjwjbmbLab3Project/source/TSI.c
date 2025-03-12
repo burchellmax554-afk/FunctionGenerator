@@ -25,7 +25,7 @@ typedef struct{
 }TOUCH_LEVEL_T;
 
 
-#define TOUCH_OFFSET  0xF000U    // Touch offset from baseline
+#define TOUCH_OFFSET  0xD000U    // Touch offset from baseline
 
 static TOUCH_LEVEL_T tsiLevels;
 static INT8U tsiFlag;
@@ -79,9 +79,9 @@ void TSITask(void){
     TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
     /* Send TSICNT to terminal to help tune settings. For debugging only */
    // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-    //BIOWrite('\r');
+   // BIOWrite('\r');
     /* Process channel */
-    if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
+    if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
         tsiFlag = 1;
     }else{
     }
@@ -116,7 +116,7 @@ INT8U TSITouchGet(void){
 void TSISwap(void){
     switch (current_state.wave_form){
     case sine:
-    	current_state.wave_form = pulse;
+        current_state.wave_form = pulse;
         break;
     case pulse:
         current_state.wave_form = sine;

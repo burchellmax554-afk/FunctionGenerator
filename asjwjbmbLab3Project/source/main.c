@@ -153,16 +153,23 @@ static void appStartTask(void *p_arg) {
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
+    INT16U cur_sense_flag;
+    INT16U test;
+    test = 1;
     while (1) {
         /* Check if the current state is any different from the previous state */
-        if (current_state.wave_form != previous_state.wave_form ||
+        if ((current_state.wave_form != previous_state.wave_form ||
             current_state.sine_frequency != previous_state.sine_frequency ||
             current_state.sine_amplitude != previous_state.sine_amplitude ||
             current_state.pulse_frequency != previous_state.pulse_frequency ||
-            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle)||test==1) {
 
-
-
+           // test = 0;
+            cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
+            if (cur_sense_flag == 1) {
+                TSISwap();  // Swap waveforms if touch is detected
+   //             BIOPutStrg("Peepee");
+            }
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
@@ -230,7 +237,7 @@ static void appTaskStateManagement(void *p_arg) {
         }
     }
 }
-
+/*
 void main_funct(void *p_arg) {
     INT16U cur_sense_flag;
 
@@ -245,6 +252,7 @@ void main_funct(void *p_arg) {
         }
       }
 }
+*/
 
 
 
