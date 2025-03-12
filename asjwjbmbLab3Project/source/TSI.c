@@ -129,7 +129,7 @@ INT8U TSITouchGet(void){
 /****************************************************************************************
 * Wave swap function
 ****************************************************************************************/
-static void TSISwap(void){
+void TSISwap(void){
     switch (current_state.wave_form){
     case sine:
     	current_state.wave_form = pulse;
