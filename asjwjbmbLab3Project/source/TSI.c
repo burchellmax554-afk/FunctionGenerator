@@ -16,7 +16,6 @@
 #include "BasicIO.h"
 #include "app_cfg.h"
 #include "TSI.h"
-#include "sineTable.h"
 #include "state.h"
 
 typedef struct{
@@ -26,15 +25,13 @@ typedef struct{
 }TOUCH_LEVEL_T;
 
 
-#define TOUCH_OFFSET  0xF000U    // Touch offset from baseline
+#define TOUCH_OFFSET  0xD000U    // Touch offset from baseline
 
 static TOUCH_LEVEL_T tsiLevels;
 static INT8U tsiFlag;
-static void tsiChCalibration(void);
-static void appTaskTSI(void *p_arg);
-static void TSISwap(void);
-static OS_TCB appTaskTSITCB;
-static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
+void appTaskTSI(void *p_arg);
+
+/*?????*/
 /*****************************************************************************************
  * TSI0Init: Initializes TSI0 module
  * Notes:
@@ -65,19 +62,6 @@ void TSIInit(void){
 }
 
 /********************************************************************************
- *   tsiCalibration: Calibration to find non-touch baseline
- *                   Note - the sensor must not be pressed when this is executed.
- ********************************************************************************/
-static void tsiChCalibration(void){
-    TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
-    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} //wait for scan to finish
-    TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-    tsiLevels.baseline = (INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-    tsiLevels.threshold = tsiLevels.baseline +
-                                         tsiLevels.offset;
-}
-
-/********************************************************************************
  *   TSITask: Cooperative task for timeslice scheduler
  *            Blocks for ~6ms
  *            In order to not block the task period should be > 6ms.
@@ -95,9 +79,9 @@ void TSITask(void){
     TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
     /* Send TSICNT to terminal to help tune settings. For debugging only */
    // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-    //BIOWrite('\r');
+   // BIOWrite('\r');
     /* Process channel */
-    if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
+    if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
         tsiFlag = 1;
     }else{
     }
@@ -107,7 +91,7 @@ void TSITask(void){
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
  ********************************************************************************/
-static void tsiChCalibration(void) {
+void tsiChCalibration(void) {
     TSI0->GENCS |= TSI_GENCS_SWTS(1);             // start a scan sequence
     while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} // wait for scan to finish
     TSI0->DATA |= TSI_DATA_EOSF(1);    // Clear flag
@@ -129,10 +113,10 @@ INT8U TSITouchGet(void){
 /****************************************************************************************
 * Wave swap function
 ****************************************************************************************/
-static void TSISwap(void){
+void TSISwap(void){
     switch (current_state.wave_form){
     case sine:
-    	current_state.wave_form = pulse;
+        current_state.wave_form = pulse;
         break;
     case pulse:
         current_state.wave_form = sine;

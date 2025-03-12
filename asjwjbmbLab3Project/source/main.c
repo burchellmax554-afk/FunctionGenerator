@@ -21,6 +21,7 @@ static OS_TCB appTaskStateManagementTCB;
 ****************************************************************************************/
 static CPU_STK appTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE];
+/*Here*/
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
@@ -30,6 +31,7 @@ static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
 void ResetSystemState(void);
 INT8U GetNumberOfDigits(INT32U num);
+void main_funct(void *p_arg);
 
 
 /****************************************************************************************
@@ -127,6 +129,7 @@ static void appStartTask(void *p_arg) {
                 "App Task StateManagement ",
                 appTaskStateManagement,
                 (void *) 0,
+/*Here*/
                 APP_CFG_TASK_STATE_MANAGEMENT_PRIO,
                 &appTaskStateManagementStk[0],
                 (APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE / 10u),
@@ -150,16 +153,23 @@ static void appStartTask(void *p_arg) {
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
+    INT16U cur_sense_flag;
+    INT16U test;
+    test = 1;
     while (1) {
         /* Check if the current state is any different from the previous state */
-        if (current_state.wave_form != previous_state.wave_form ||
+        if ((current_state.wave_form != previous_state.wave_form ||
             current_state.sine_frequency != previous_state.sine_frequency ||
             current_state.sine_amplitude != previous_state.sine_amplitude ||
             current_state.pulse_frequency != previous_state.pulse_frequency ||
-            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle)||test==1) {
 
-
-
+           // test = 0;
+            cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
+            if (cur_sense_flag == 1) {
+                TSISwap();  // Swap waveforms if touch is detected
+   //             BIOPutStrg("Peepee");
+            }
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
@@ -213,7 +223,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
     }
 }
 
-
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
     SW_T sw_in = 0; /* Initialize switch to 0 */
@@ -228,37 +237,22 @@ static void appTaskStateManagement(void *p_arg) {
         }
     }
 }
-
-static void appTaskTSI(void *p_arg) {
+/*
+void main_funct(void *p_arg) {
     INT16U cur_sense_flag;
+
     (void)p_arg;
     ResetSystemState();
 
     while (1) {
     	// OSTDely
-        DB0_TURN_ON(); /* debug bit measures sensor scan time */
-        /*start a scan sequence */
-        TSI0->GENCS |= TSI_GENCS_SWTS(1);
-        /* wait for scan to finish */
-        while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){}
-        DB0_TURN_OFF();
-
-        TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-        /* Send TSICNT to terminal to help tune settings. For debugging only */
-       // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-        //BIOWrite('\r');
-        /* Process channel */
-        if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) > tsiLevels.threshold){
-            tsiFlag = 1;
-        }else{
-        }
-    }
         cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
         if (cur_sense_flag == 1) {
             TSISwap();  // Swap waveforms if touch is detected
-
+        }
       }
 }
+*/
 
 
 
