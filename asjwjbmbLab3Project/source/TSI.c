@@ -7,10 +7,17 @@
 /*
  *
  */
+#include <Timer.h>
 #include "MCUType.h"
+#include "os.h"
+#include "FRDM_MCXN947ClkCfg.h"
 #include "FRDM_MCXN947_GPIO.h"
-#include "TSI.h"
+#include "CsOS_SW.h"
 #include "BasicIO.h"
+#include "app_cfg.h"
+#include "TSI.h"
+#include "sineTable.h"
+#include "state.h"
 
 typedef struct{
     INT16U baseline;
@@ -23,7 +30,11 @@ typedef struct{
 
 static TOUCH_LEVEL_T tsiLevels;
 static INT8U tsiFlag;
-
+static void tsiChCalibration(void);
+static void appTaskTSI(void *p_arg);
+static void TSISwap(void);
+static OS_TCB appTaskTSITCB;
+static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /*****************************************************************************************
  * TSI0Init: Initializes TSI0 module
  * Notes:
@@ -93,6 +104,18 @@ void TSITask(void){
 }
 
 /********************************************************************************
+ *   tsiCalibration: Calibration to find non-touch baseline
+ *                   Note - the sensor must not be pressed when this is executed.
+ ********************************************************************************/
+static void tsiChCalibration(void) {
+    TSI0->GENCS |= TSI_GENCS_SWTS(1);             // start a scan sequence
+    while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){} // wait for scan to finish
+    TSI0->DATA |= TSI_DATA_EOSF(1);    // Clear flag
+    tsiLevels.baseline = (INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK);
+    tsiLevels.threshold = tsiLevels.baseline + tsiLevels.offset;
+}
+
+/********************************************************************************
  *   TSIGetSensorFlags: Returns value of sensor flag variable and clears it
  *                      to receive sensor press only one time.
  ********************************************************************************/
@@ -103,3 +126,18 @@ INT8U TSITouchGet(void){
     return tflag;
 }
 
+/****************************************************************************************
+* Wave swap function
+****************************************************************************************/
+static void TSISwap(void){
+    switch (current_state.wave_form){
+    case sine:
+    	current_state.wave_form = pulse;
+        break;
+    case pulse:
+        current_state.wave_form = sine;
+        break;
+    default:
+        current_state. wave_form = sine;
+    }
+}
