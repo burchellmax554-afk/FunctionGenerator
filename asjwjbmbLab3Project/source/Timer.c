@@ -16,7 +16,6 @@
 #include "BasicIO.h"
 #include "app_cfg.h"
 #include "Timer.h"
-#include "TSI.h"
 /*****************************************************************************************/
 
 // Variable used for checking
@@ -58,10 +57,6 @@ void LPTMR0_IRQHandler(void){
 
     /* Clear Timer Compare Flag */
     LPTMR0->CSR |= LPTMR_CSR_TCF(1);
-
-    TSITask();
-
-
-
 }
 /**********/
+

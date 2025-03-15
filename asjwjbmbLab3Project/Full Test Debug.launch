@@ -5,16 +5,12 @@
     <booleanAttribute key="boot.config.enable" value="false"/>
     <stringAttribute key="boot.configuration.control" value=""/>
     <stringAttribute key="bootrom.stall" value="0x50000040"/>
-    <stringAttribute key="com.crt.ctrlcenter.OFSemuDetails" value="LinkServer"/>
+    <stringAttribute key="com.crt.ctrlcenter.OFSemuDetails" value="LinkServerGCK2JB5RRUYTR"/>
     <booleanAttribute key="com.crt.ctrlcenter.crtInit" value="true"/>
     <stringAttribute key="com.crt.ctrlcenter.currentWireType" value="SWD"/>
     <booleanAttribute key="com.crt.ctrlcenter.mainBreakIsHardware" value="true"/>
-<<<<<<< HEAD
-    <stringAttribute key="com.crt.ctrlcenter.serialNumber" value="LinkServerNXP SemiconductorsMCU-LINK FRDM-MCXN947 (r0E7) CMSIS-DAP V3.1283YSF3Q0V3KZRK"/>
-=======
     <booleanAttribute key="com.crt.ctrlcenter.saveState" value="true"/>
     <stringAttribute key="com.crt.ctrlcenter.serialNumber" value="LinkServerNXP SemiconductorsMCU-LINK FRDM-MCXN947 (r0E7) CMSIS-DAP V3.128GCK2JB5RRUYTR"/>
->>>>>>> 1c9e7b8 (Commit to main)
     <listAttribute key="com.crt.ctrlcenter.symbolsAndImagesGroupSettings"/>
     <intAttribute key="com.crt.ctrlcenter.version" value="6"/>
     <stringAttribute key="com.nxp.mcuxpresso.flash.base.address" value="0x0"/>
@@ -84,11 +80,12 @@
     <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_ID" value="gdb"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="remote"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug/awjsjbmbLab3Project.axf"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="Debug\awjsjbmbLab3Project.axf"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="awjsjbmbLab3Project"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="com.crt.advproject.config.exe.debug.843849405"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
     <booleanAttribute key="org.eclipse.cdt.launch.use_terminal" value="false"/>
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
         <listEntry value="/awjsjbmbLab3Project"/>
     </listAttribute>

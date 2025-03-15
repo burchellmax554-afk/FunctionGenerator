@@ -308,7 +308,7 @@
 								<option id="com.crt.advproject.link.sgstubenable.1412338980" name="Enable generation of Secure Gateway Import Library" superClass="com.crt.advproject.link.sgstubenable" value="false" valueType="boolean"/>
 								<option id="com.crt.advproject.link.nonsecureobject.808062488" name="Secure Gateway Import Library" superClass="com.crt.advproject.link.nonsecureobject"/>
 								<option id="com.crt.advproject.link.inimplib.622454456" name="Input Secure Gateway Import Library" superClass="com.crt.advproject.link.inimplib"/>
-								<option id="gnu.c.link.option.group.1165749100" name="Group libraries (-Wl,--start-group  ...  -Wl,--end-group)" superClass="gnu.c.link.option.group"/>
+								<option id="gnu.c.link.option.group.1165749100" superClass="gnu.c.link.option.group"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1064931027" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -635,7 +635,7 @@
 								<option id="com.crt.advproject.link.sgstubenable.740604569" name="Enable generation of Secure Gateway Import Library" superClass="com.crt.advproject.link.sgstubenable" value="false" valueType="boolean"/>
 								<option id="com.crt.advproject.link.nonsecureobject.214777651" name="Secure Gateway Import Library" superClass="com.crt.advproject.link.nonsecureobject"/>
 								<option id="com.crt.advproject.link.inimplib.1332162173" name="Input Secure Gateway Import Library" superClass="com.crt.advproject.link.inimplib"/>
-								<option id="gnu.c.link.option.group.1508752680" name="Group libraries (-Wl,--start-group  ...  -Wl,--end-group)" superClass="gnu.c.link.option.group"/>
+								<option id="gnu.c.link.option.group.1508752680" superClass="gnu.c.link.option.group"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1503183046" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -685,7 +685,7 @@
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="com.nxp.mcuxpresso.core.datamodels">
 		<sdkName>SDK_2.x_FRDM-MCXN947</sdkName>
-		<sdkVersion>24.12.000</sdkVersion>
+		<sdkVersion>2.16.100</sdkVersion>
 		<sdkComponents>platform.drivers.reset.MCXN947;platform.devices.MCXN947_system.MCXN947;component.serial_manager.MCXN947;platform.utilities.assert.MCXN947;platform.drivers.lpflexcomm_lpuart.MCXN947;component.lpuart_adapter.MCXN947;component.serial_manager_uart.MCXN947;component.lists.MCXN947;CMSIS_Include_core_cm.MCXN947;platform.devices.MCXN947_CMSIS.MCXN947;platform.devices.MCXN947_startup.MCXN947;project_template.frdmmcxn947.MCXN947;utility.debug_console.MCXN947;platform.drivers.clock.MCXN947;platform.drivers.port.MCXN947;platform.drivers.gpio.MCXN947;platform.drivers.mcx_spc.MCXN947;platform.drivers.lpflexcomm.MCXN947;platform.drivers.common.MCXN947;platform.devices.MCXN947_debugger.MCXN947;</sdkComponents>
 		<boardId>frdmmcxn947</boardId>
 		<package>MCXN947VDF</package>

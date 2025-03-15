@@ -9,6 +9,8 @@
 #include "TSI.h"
 #include "sineTable.h"
 #include "state.h"
+#include "state_management.h"
+#include "rotary.h"
 
 /****************************************************************************************
 * Allocate task control blocks
@@ -16,46 +18,30 @@
 static OS_TCB appTaskStartTCB;
 static OS_TCB appTaskFunctionDisplayTCB;
 static OS_TCB appTaskStateManagementTCB;
+static OS_TCB appTaskRotaryTCB;
+static OS_TCB appTaskTouchDetectionTCB;
+static OS_TCB appTaskTSITCB;
 /****************************************************************************************
 * Allocate task stack space.
 ****************************************************************************************/
 static CPU_STK appTaskStartStk[APP_CFG_TASK_START_STK_SIZE];
 static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE];
-/*Here*/
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
+static CPU_STK appTaskRotaryStk[APP_CFG_TASK_ROTARY_STK_SIZE];
+static CPU_STK appTaskTouchDetectionStk[APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE];
+static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
 ****************************************************************************************/
 static void appStartTask(void *p_arg);
 static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
-void ResetSystemState(void);
-INT8U GetNumberOfDigits(INT32U num);
-void main_funct(void *p_arg);
-
-
+static void appTaskRotary(void *p_arg);
+static void appTaskTouchDetection(void *p_arg);
+static void appTaskTSI(void *p_arg);
 /****************************************************************************************
-* Reset Function to set back to default
+Defined Variables
 ****************************************************************************************/
-void ResetSystemState(void) {
-    current_state = (SystemState) {sine, 1000, 10, 1000, 50};
-}
-
-/****************************************************************************************
-* Calculate the number of digits of a number, to stop leading 0's
-****************************************************************************************/
-INT8U GetNumberOfDigits(INT32U num) {
-    INT8U num_digits = 0;
-    if (num == 0) {
-        return 1;  /* Special case: 0 has 1 digit */
-    }
-
-    while (num > 0) {
-        num /= 10;  /* Remove the last digit */
-        num_digits++;
-    }
-    return num_digits;
-}
 
 /****************************************************************************************
 * main()
@@ -92,7 +78,6 @@ void main(void) {
     assert(0);						/* Should never get here */
 }
 
-
 /****************************************************************************************
 * STARTUP TASK
 ****************************************************************************************/
@@ -125,11 +110,10 @@ static void appStartTask(void *p_arg) {
                 &os_err);
     assert(os_err == OS_ERR_NONE);
 
-    OSTaskCreate(&appTaskStateManagementTCB,                  /* Create Task 1                    */
-                "App Task StateManagement ",
+    OSTaskCreate(&appTaskStateManagementTCB,                  /* Create Task 2                    */
+                "App Task State Management ",
                 appTaskStateManagement,
                 (void *) 0,
-/*Here*/
                 APP_CFG_TASK_STATE_MANAGEMENT_PRIO,
                 &appTaskStateManagementStk[0],
                 (APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE / 10u),
@@ -141,41 +125,96 @@ static void appStartTask(void *p_arg) {
                 &os_err);
     assert(os_err == OS_ERR_NONE);
 
+    // Create the new rotary task
+    OSTaskCreate(&appTaskRotaryTCB,                  /* Create Task 3                    */
+                "App Task Rotary",
+                appTaskRotary,
+                (void *) 0,
+                APP_CFG_TASK_ROTARY_PRIO,          /* New priority for the rotary task */
+                &appTaskRotaryStk[0],
+                (APP_CFG_TASK_ROTARY_STK_SIZE / 10u),
+                APP_CFG_TASK_ROTARY_STK_SIZE,
+                0,
+                0,
+                (void *) 0,
+                (OS_OPT_TASK_NONE),
+                &os_err);
+    assert(os_err == OS_ERR_NONE);
+
+    OSTaskCreate(&appTaskTouchDetectionTCB,
+                     "Touch Detection Task",
+                     appTaskTouchDetection,
+                     (void *)0,
+                     APP_CFG_TASK_TOUCH_DETECTION_PRIO,
+                     &appTaskTouchDetectionStk[0],
+                     (APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE / 10u),
+                     APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE,
+                     0,
+                     0,
+                     (void *)0,
+                     (OS_OPT_TASK_NONE),
+                     &os_err);
+        assert(os_err == OS_ERR_NONE);
+    OSTaskCreate(&appTaskTSITCB,
+                   "TSI Task",
+                   appTaskTSI,
+                   (void *)0,
+                    APP_CFG_TASK_TSI_PRIO,
+                    &appTaskTSIStk[0],
+                    (APP_CFG_TASK_TSI_STK_SIZE / 10u),
+                    APP_CFG_TASK_TSI_STK_SIZE,
+                    0,
+                    0,
+                    (void *)0,
+                    (OS_OPT_TASK_NONE),
+                    &os_err);
+       assert(os_err == OS_ERR_NONE);
+
     OSTaskDel((OS_TCB *)0, &os_err); /* Delete start task */
     assert(os_err == OS_ERR_NONE);
 }
 
-
-
 /****************************************************************************************
-* Update the display only if the state changes
+* Task for managing the rotary encoder
 ****************************************************************************************/
+static void appTaskRotary(void *p_arg) {
+    (void)p_arg;
+    OS_ERR os_err;
+    qeQDCInit();
+    current_state = (SystemState) {sine, 1000, 10, 1000, 50};  // Initialize system with sine wave by default
+    while (1) {
+        // Task content for rotary encoder will be added here later.
+        OSTimeDly(SLICE_PER, OS_OPT_TIME_PERIODIC, &os_err);  // Periodic delay
+        qeCntOutTask();
+        if (current_state.wave_form == sine) {
+            updateSine();  // Update sinewave amplitude
+        } else if (current_state.wave_form == pulse) {
+            updatePulseTrain();  // Update pulse train duty cycle
+        } else {
+            updateSine();  // Default to sine if no mode is set
+        }
+    }
+}
+
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
-    INT16U cur_sense_flag;
-    INT16U test;
-    test = 1;
     while (1) {
         /* Check if the current state is any different from the previous state */
-        if ((current_state.wave_form != previous_state.wave_form ||
+        if (current_state.wave_form != previous_state.wave_form ||
             current_state.sine_frequency != previous_state.sine_frequency ||
             current_state.sine_amplitude != previous_state.sine_amplitude ||
             current_state.pulse_frequency != previous_state.pulse_frequency ||
-            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle)||test==1) {
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
 
-           // test = 0;
-            cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
-            if (cur_sense_flag == 1) {
-                TSISwap();  // Swap waveforms if touch is detected
-   //             BIOPutStrg("Peepee");
-            }
+
+
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
                     break;
                 case pulse:
-                    BIOPutStrg("\rsine, ");
+                   BIOPutStrg("\rsine, ");
                     break;
                 default:
                     BIOPutStrg("\rInvalid Mode! ");
@@ -183,12 +222,12 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
             /* Calculate the number of digits dynamically */
             INT8U sine_frequency_digits = GetNumberOfDigits(current_state.sine_frequency);
-            INT8U amplitude_digits = GetNumberOfDigits(current_state.sine_amplitude);
+            INT8U amplitude_digits = GetNumberOfDigits((INT32U)current_state.sine_amplitude);
 
             /* Display sine frequency, amplitude using BIOOutDecWord */
-            BIOOutDecWord(current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOOutDecWord((INT32U)current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
             BIOPutStrg("Hz, ");
-            BIOOutDecWord(current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOOutDecWord((INT32U)current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
             BIOPutStrg(", ");
 
             /* Display pulse mode, pulse frequency, and duty cycle */
@@ -205,12 +244,12 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
             /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
             INT8U pulse_frequency_digits = GetNumberOfDigits(current_state.pulse_frequency);
-            INT8U duty_cycle_digits = GetNumberOfDigits(current_state.pulse_duty_cycle);
+            INT8U duty_cycle_digits = GetNumberOfDigits((INT32U)current_state.pulse_duty_cycle);
 
             /* Display pulse frequency and duty cycle using BIOOutDecWord */
             BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
             BIOPutStrg("Hz, ");
-            BIOOutDecWord(current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
             BIOPutStrg("%");
 
             /* Save current state to previous_state for next iteration */
@@ -237,22 +276,50 @@ static void appTaskStateManagement(void *p_arg) {
         }
     }
 }
-/*
-void main_funct(void *p_arg) {
-    INT16U cur_sense_flag;
 
-    (void)p_arg;
-    ResetSystemState();
+static void appTaskTouchDetection(void *p_arg) {
+    OS_ERR os_err;
+    (void)p_arg;  // Avoid unused parameter warning
 
     while (1) {
-    	// OSTDely
-        cur_sense_flag = TSITouchGet();  // Check the TSI for touch input
-        if (cur_sense_flag == 1) {
-            TSISwap();  // Swap waveforms if touch is detected
+        if (TSITouchGet() ==  1) {
+            TSISwap();  // Swap the waveform if touch is detected
         }
-      }
+
+        // Delay to avoid overloading the system
+        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+        assert(os_err == OS_ERR_NONE);
+    }
 }
-*/
 
+void appTaskTSI(void *p_arg){
+    OS_ERR os_err;
+    (void)p_arg;
+    while(1){
+        DB0_TURN_ON(); /* debug bit measures sensor scan time */
+        /*start a scan sequence */
+        TSI0->GENCS |= TSI_GENCS_SWTS(1);
+        /* wait for scan to finish */
+        while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){}
+        DB0_TURN_OFF();
 
-
+        TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
+        /* Send TSICNT to terminal to help tune settings. For debugging only */
+       // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
+        //BIOWrite('\r');
+        /* Process channel */
+        if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
+            tsiLevels.tsiFlag = 1;
+            //BIOOutHexWord(tsiLevels.threshold);
+            //BIOPutStrg("********");
+            //BIOOutCRLF();
+        }else{
+            tsiLevels.tsiFlag = 0;
+            //BIOOutHexWord(tsiLevels.threshold);
+            //BIOPutStrg("++++++++");
+            //BIOOutCRLF();
+    }
+    OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+    assert(os_err == OS_ERR_NONE);
+    }
+}
