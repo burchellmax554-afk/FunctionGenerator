@@ -26,21 +26,20 @@ type_indexBuffer indexBuffer; //'type_indexBuffer' struct has 2 members: '.flag'
  *      Initialize DAC2 to receive 14 bits from DMA0 and construct sinusoidal signal
  ******************************************************************************************/
 void DACinit(void){
-    SYSCON0->AHBCLKCTRLSET[1] = SYSCON_AHBCLKCTRL1_DAC2(1); /* Enable clock for DAC2   */
+    SYSCON0->AHBCLKCTRLSET[3] = SYSCON_AHBCLKCTRL3_DAC2(1); /* Enable clock for DAC2   */
     SYSCON0->DAC[2].CLKSEL = SYSCON_DAC_CLKSEL_SEL(1); /* Select pll0_clk */
     SYSCON0->DAC[2].CLKDIV = 2; /* Setup DAC2's clock divider (150/3 = 50MHz) */
     while (SYSCON0->DAC[2].CLKDIV & SYSCON_DAC_CLKDIV_UNSTAB(1)) {
         /* Wait for DAC2CLKDIV to stabilize */
     }
-    SPC0->ACTIVE_CFG1 |= SPC_ACTIVE_CFG1_SOC_CNTRL(0x11); /* Enable DAC0 and VREF power*/
-    SYSCON0->PRESETCTRLSET[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Set DAC0 reset      */
-    SYSCON0->PRESETCTRLCLR[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Clear DAC0 reset    */
+    SPC0->ACTIVE_CFG1 |= SPC_ACTIVE_CFG1_SOC_CNTRL(0x41); /* Enable DAC0 and VREF power*/
+    SYSCON0->PRESETCTRLSET[3] = SYSCON_PRESETCTRL3_DAC2_RST(1); /* Set DAC0 reset      */
+    SYSCON0->PRESETCTRLCLR[3] = SYSCON_PRESETCTRL3_DAC2_RST(1); /* Clear DAC0 reset    */
 
     /* Set up DAC0, current sources from VREF, V_ANA reference, buffer enable */
-    DAC2->GCR = LPDAC_GCR_IREF_ZTC_EXT_SEL(1)|LPDAC_GCR_IREF_PTAT_EXT_SEL(1)|
-                LPDAC_GCR_DACRFS(0x00)|LPDAC_GCR_BUF_EN(1);
+    DAC2->GCR = HPDAC_GCR_BUF_EN(1);
     /* Turn it on */
-    DAC2->GCR |= LPDAC_GCR_DACEN(1);
+    DAC2->GCR |= HPDAC_GCR_DACEN(1);
 }
 
 /*******************************************************************************************
@@ -66,7 +65,7 @@ void DMAinit(void){
                                      | DMA_TCD_ATTR_DMOD(0) | DMA_TCD_ATTR_DSIZE(SIZE_CODE_16BIT);
 
         //After major loop is finished set the address back to the first byte of the block (negative offset)
-        DMA0->CH[WAVE_DMA_CH].TCD_SLAST_SDA = DMA_TCD_SLAST_SDA_SLAST_SDA(-(WAVE_BYTES_PER_BLOCK));
+        DMA0->CH[WAVE_DMA_CH].TCD_SLAST_SDA = DMA_TCD_SLAST_SDA_SLAST_SDA(-(WAVE_BYTES_PER_BLOCK*NUM_BLOCKS));
 
         //Set destination address to the DAC data register
         DMA0->CH[WAVE_DMA_CH].TCD_DADDR = DMA_TCD_DADDR_DADDR(&DAC2->DATA);
@@ -83,13 +82,13 @@ void DMAinit(void){
 
         //Set minor loop iteration counters to number of minor loops in the major loop (CITER=BITER required for initialization)
         DMA0->CH[WAVE_DMA_CH].TCD_CITER_ELINKNO = DMA_TCD_CITER_ELINKNO_ELINK(0)| //Channel-channel linking disabled
-                                                  DMA_TCD_CITER_ELINKNO_CITER(WAVE_SAMPLES_PER_BLOCK); //Current Major Iteration Count
+                                                  DMA_TCD_CITER_ELINKNO_CITER(WAVE_SAMPLES_PER_BLOCK*NUM_BLOCKS); //Current Major Iteration Count
 
         DMA0->CH[WAVE_DMA_CH].TCD_BITER_ELINKNO = DMA_TCD_BITER_ELINKNO_ELINK(0)| //Channel-channel linking disabled
-                                                  DMA_TCD_BITER_ELINKNO_BITER(WAVE_SAMPLES_PER_BLOCK);//Starting Major Iteration Count
+                                                  DMA_TCD_BITER_ELINKNO_BITER(WAVE_SAMPLES_PER_BLOCK*NUM_BLOCKS);//Starting Major Iteration Count
 
         //Initialize the rest of the TCD. 8 cycle stall after each R/W. Enable full major interrupts.
-        DMA0->CH[WAVE_DMA_CH].TCD_CSR = DMA_TCD_CSR_BWC(3)|DMA_TCD_CSR_INTHALF(0)|DMA_TCD_CSR_INTMAJOR(1);
+        DMA0->CH[WAVE_DMA_CH].TCD_CSR = DMA_TCD_CSR_BWC(3)|DMA_TCD_CSR_INTHALF(1)|DMA_TCD_CSR_INTMAJOR(1);
 
 
         //Configure CTIMER2 Match 0 for trigger
@@ -103,7 +102,7 @@ void DMAinit(void){
         CTIMER2->TCR = CTIMER_TCR_CEN(0);  /* Disable timer */
         CTIMER2->MCR = CTIMER_MCR_MR0R(1); /* Set CTIMER2 to reset counter on match 0 */
         CTIMER2->PR = CTIMER_PR_PRVAL(0);  /* Set prescale to divide by 1) */
-        CTIMER2->MR[0] = CTIMER_MR_MATCH(3125 - 1); /* Set MR0 to give CTIMER2 a 48000-cycle period */
+        CTIMER2->MR[0] = CTIMER_MR_MATCH(2000 - 1); /* Set MR0 to give CTIMER2 a 48000-cycle period */
         CTIMER2->TCR |= CTIMER_TCR_CEN(1); /* Enable CTIMER2 */
 
         //Input source is CTIMER2 Match 0
@@ -121,11 +120,11 @@ void DMAinit(void){
  *      Posts semaphore that the signal processing task pends on, which shall receive the index
  *      (either 0 or 1) signaling the task to begin writing to the [index] block of the ping pong.
  ******************************************************************************************/
-void DMA0_Full_Major_IRQHandler(void){
+void EDMA_0_CH0_IRQHandler(void){
 
     OS_ERR os_err;
 
-    DMA0->CH[WAVE_DMA_CH].CH_INT = DMA_CH_INT_INT(0);
+    DMA0->CH[WAVE_DMA_CH].CH_INT = DMA_CH_INT_INT(1);
     indexBuffer.index=indexBuffer.index^1;
 
     OSSemPost(&indexBuffer.flag, OS_OPT_POST_1, &os_err);

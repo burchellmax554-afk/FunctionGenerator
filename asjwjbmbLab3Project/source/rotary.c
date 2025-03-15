@@ -82,7 +82,10 @@ void updateSine(void) {
 ******************************************************************************************/
 void updatePulseTrain(void) {
     // Update duty cycle based on current count (qeCnt)
-    current_state.pulse_duty_cycle = qeCnt ;  // Scale to match 0-100% duty cycle
+
+//FIX THIS PLEASE                                                                               ++++++++++++++++++++++++++++++++
+
+    //current_state.pulse_duty_cycle = qeCnt ;  // Scale to match 0-100% duty cycle
     // Remove in  final program
 //    BIOPutStrg("\r\nPulse Duty Cycle: ");
 //    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)

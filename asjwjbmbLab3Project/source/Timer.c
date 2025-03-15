@@ -44,7 +44,6 @@ void TimerInit(void)
     LPTMR0->CSR |= LPTMR_CSR_TEN(1);
     LPTMR0->CSR |= LPTMR_CSR_TIE(1);
 
-
 }
 /**********/
 

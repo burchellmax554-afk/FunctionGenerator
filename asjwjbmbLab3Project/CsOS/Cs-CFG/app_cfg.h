@@ -48,12 +48,23 @@
 
 #define APP_CFG_TASK_START_PRIO            6u
 #define APP_CFG_SW_TASK_PRIO		       14u
-#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 8u /*Define variable names to better match lab 2 over lab 1 */
+#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 10u /*Define variable names to better match lab 2 over lab 1 */
+#define APP_CFG_TASK_STATE_MANAGEMENT_PRIO 10u
+#define APP_CFG_TASK_TSI_PRIO              8u
+#define APP_CFG_TASK_ROTARY_PRIO           10u
+#define APP_CFG_TASK_TOUCH_DETECTION_PRIO  8u
+
+
+//Before Jake messed with it
+/*
+#define APP_CFG_TASK_START_PRIO            6u
+#define APP_CFG_SW_TASK_PRIO               14u
+#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 8u
 #define APP_CFG_TASK_STATE_MANAGEMENT_PRIO 10u
 #define APP_CFG_TASK_TSI_PRIO              12u
 #define APP_CFG_TASK_ROTARY_PRIO           10u
 #define APP_CFG_TASK_TOUCH_DETECTION_PRIO  10u
-
+*/
 
 /*
 *********************************************************************************************************

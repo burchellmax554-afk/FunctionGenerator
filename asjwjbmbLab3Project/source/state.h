@@ -19,15 +19,16 @@ typedef struct {
     INT32U sine_frequency;         // Frequency for sinewave (Hz)
     INT32S sine_amplitude;         // Amplitude for sinewave
     INT32U pulse_frequency;        // Frequency for pulse train (Hz)
-    INT32S pulse_duty_cycle;       // Duty cycle for pulse train (%)
+    INT16U pulse_duty_cycle;       // Duty cycle for pulse train (%)
 } SystemState;
 
 extern SystemState current_state;  // Declare current_state as an external variable
 extern  SystemState previous_state;
-extern SystemState default_state;
+extern SystemState defaultedstate;
 
 extern INT16S qeCnt;        // Declare as external variable
 extern INT16S qeXCnt;       // Declare as external variable
+
 typedef struct{
     INT16U baseline;
     INT16U offset;

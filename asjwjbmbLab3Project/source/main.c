@@ -11,6 +11,8 @@
 #include "state.h"
 #include "state_management.h"
 #include "rotary.h"
+#include "CTimer.h"
+#include "DACDMA.h"
 
 /****************************************************************************************
 * Allocate task control blocks
@@ -94,6 +96,9 @@ static void appStartTask(void *p_arg) {
     SwInit();
     TSIInit();
     TimerInit();
+    ctInit();
+    DACinit();
+    DMAinit();
 
     OSTaskCreate(&appTaskFunctionDisplayTCB,                  /* Create Task 1                    */
                 "App Task TimerDisplay ",
@@ -181,7 +186,7 @@ static void appTaskRotary(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     qeQDCInit();
-    current_state = (SystemState) {sine, 1000, 10, 1000, 50};  // Initialize system with sine wave by default
+    //current_state = (SystemState) {sine, 1000, 10, 1000, 50};  // Initialize system with sine wave by default
     while (1) {
         // Task content for rotary encoder will be added here later.
         OSTimeDly(SLICE_PER, OS_OPT_TIME_PERIODIC, &os_err);  // Periodic delay
@@ -200,14 +205,17 @@ static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     while (1) {
-        /* Check if the current state is any different from the previous state */
-        if (current_state.wave_form != previous_state.wave_form ||
-            current_state.sine_frequency != previous_state.sine_frequency ||
-            current_state.sine_amplitude != previous_state.sine_amplitude ||
-            current_state.pulse_frequency != previous_state.pulse_frequency ||
-            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
-
-
+        if (current_state.wave_form != previous_state.wave_form) {
+                //Empty for now
+            } else if (current_state.sine_frequency != previous_state.sine_frequency) {
+                ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+            } else if (current_state.sine_amplitude != previous_state.sine_amplitude) {
+               // ctUpdateFrequency(current_state.sine_frequency, current_state.sine_amplitude);
+            } else if (current_state.pulse_frequency != previous_state.pulse_frequency) {
+                ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+            } else if (current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+                ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+            }
 
             switch (current_state.wave_form) {
                 case sine:
@@ -260,7 +268,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
     assert(os_err == OS_ERR_NONE);
 
     }
-}
 
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
@@ -287,7 +294,7 @@ static void appTaskTouchDetection(void *p_arg) {
         }
 
         // Delay to avoid overloading the system
-        OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+        OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
         assert(os_err == OS_ERR_NONE);
     }
 }
@@ -310,7 +317,7 @@ void appTaskTSI(void *p_arg){
         }else{
             tsiLevels.tsiFlag = 0;
     }
-    OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+    OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
     assert(os_err == OS_ERR_NONE);
     }
 }

@@ -8,8 +8,8 @@
 #define CTIMER_H_
 // Function Prototypes
 /*****************************************************************************************/
-void ctUpdateFrequency(INT32U freq);
-void ctUpdateDutyCycle(INT32U dutyCycle);
+void ctUpdateFrequency(INT32U freq, INT32U dutyValue);
+void ctUpdateDutyCycle(INT32U freq, INT32U dutyValue);
 void ctInit(void);
 /*****************************************************************************************/
 #endif /* CTIMER_H_ */
