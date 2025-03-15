@@ -24,6 +24,7 @@ typedef struct {
 
 extern SystemState current_state;  // Declare current_state as an external variable
 extern  SystemState previous_state;
+extern SystemState default_state;
 
 extern INT16S qeCnt;        // Declare as external variable
 extern INT16S qeXCnt;       // Declare as external variable

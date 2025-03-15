@@ -26,15 +26,15 @@ type_indexBuffer indexBuffer; //'type_indexBuffer' struct has 2 members: '.flag'
  *      Initialize DAC2 to receive 14 bits from DMA0 and construct sinusoidal signal
  ******************************************************************************************/
 void DACinit(void){
-    //SYSCON0->AHBCLKCTRLSET[1] = SYSCON_AHBCLKCTRL1_DAC2(1); /* Enable clock for DAC2   */
+    SYSCON0->AHBCLKCTRLSET[1] = SYSCON_AHBCLKCTRL1_DAC2(1); /* Enable clock for DAC2   */
     SYSCON0->DAC[2].CLKSEL = SYSCON_DAC_CLKSEL_SEL(1); /* Select pll0_clk */
     SYSCON0->DAC[2].CLKDIV = 2; /* Setup DAC2's clock divider (150/3 = 50MHz) */
     while (SYSCON0->DAC[2].CLKDIV & SYSCON_DAC_CLKDIV_UNSTAB(1)) {
         /* Wait for DAC2CLKDIV to stabilize */
     }
     SPC0->ACTIVE_CFG1 |= SPC_ACTIVE_CFG1_SOC_CNTRL(0x11); /* Enable DAC0 and VREF power*/
-   // SYSCON0->PRESETCTRLSET[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Set DAC0 reset      */
-   // SYSCON0->PRESETCTRLCLR[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Clear DAC0 reset    */
+    SYSCON0->PRESETCTRLSET[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Set DAC0 reset      */
+    SYSCON0->PRESETCTRLCLR[1] = SYSCON_PRESETCTRL1_DAC2_RST(1); /* Clear DAC0 reset    */
 
     /* Set up DAC0, current sources from VREF, V_ANA reference, buffer enable */
     DAC2->GCR = LPDAC_GCR_IREF_ZTC_EXT_SEL(1)|LPDAC_GCR_IREF_PTAT_EXT_SEL(1)|

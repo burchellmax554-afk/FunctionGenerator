@@ -304,20 +304,11 @@ void appTaskTSI(void *p_arg){
         DB0_TURN_OFF();
 
         TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-        /* Send TSICNT to terminal to help tune settings. For debugging only */
-       // BIOOutHexWord(TSI0->DATA & TSI_DATA_TSICNT_MASK);
-        //BIOWrite('\r');
         /* Process channel */
         if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
             tsiLevels.tsiFlag = 1;
-            //BIOOutHexWord(tsiLevels.threshold);
-            //BIOPutStrg("********");
-            //BIOOutCRLF();
         }else{
             tsiLevels.tsiFlag = 0;
-            //BIOOutHexWord(tsiLevels.threshold);
-            //BIOPutStrg("++++++++");
-            //BIOOutCRLF();
     }
     OSTimeDly(10, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
     assert(os_err == OS_ERR_NONE);

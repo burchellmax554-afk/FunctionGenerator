@@ -18,3 +18,4 @@ INT16U indexBufferPend(OS_TICK tout, OS_ERR *os_err);
 void DMA0_Full_Major_IRQHandler(void);
 
 #endif /* DACDMA_H_ */
+

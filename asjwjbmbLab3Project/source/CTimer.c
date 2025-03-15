@@ -1,7 +1,7 @@
 /*
  * CTIMER.c
  *
- *  Last modified 02MAR2025 by John Brown
+ *  Last modified 12MAR2025 by John Brown
  *      Authors: Todd Morton, Sam Johnson
  *
  */
@@ -18,7 +18,6 @@
 #include "MCUType.h"
 #include "FRDM_MCXN947ClkCfg.h"
 #include "CTIMER.h"
-#include "BasicIO.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -28,8 +27,9 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-INT32U periodValue; // Period value
+INT32U periodValue = 150000; // Period value (default is 150000)
 INT32U dutyValue = 50; // Duty cycle (default is 50)
+
 /***********************************************************************************
  * Configure CTIMER0 to generate a 1kHz square wave on P0_11 using pll0_clk (150MHz)
  * Sam Johnson
@@ -70,10 +70,11 @@ void ctInit(void){
 void ctUpdateFrequency(INT32U freq){
     if (freq == 0) return; // Prevent zero division
 
-    periodValue = 150000000 / freq;
+    periodValue = 150000000 / freq; // Calculate period value based on new frequency
+
 
     // Update Value
-    CTIMER0->MR[0] = CTIMER_MR_MATCH(periodValue - 1); //
+    CTIMER0->MR[0] = CTIMER_MR_MATCH(periodValue - 1); // Change period value
     CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty Cycle change
 
     // Reset counter to apply
@@ -86,12 +87,14 @@ void ctUpdateFrequency(INT32U freq){
 // Function to update duty cycle
 void ctUpdateDutyCycle(INT32U dutyCycle){
 
-    dutyValue = dutyCycle; // Save the duty cycle
+    dutyValue = 100 - dutyCycle; // Save the duty cycle
 
-    CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyCycle) / 100); // Duty cycle change
+    CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty cycle change
 
     // Reset counter to apply
     CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
     CTIMER0->TC = 0; // Reset counter
     CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
 }
+
+
