@@ -205,16 +205,22 @@ static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     while (1) {
-        if (current_state.wave_form != previous_state.wave_form) {
-                //Empty for now
-            } else if (current_state.sine_frequency != previous_state.sine_frequency) {
-                //ctUpdateFrequency(current_state.sine_frequency, current_state.sine_amplitude);
-            } else if (current_state.sine_amplitude != previous_state.sine_amplitude) {
-               //ctUpdateDutyCycle(current_state.sine_frequency, current_state.sine_amplitude);
-            } else if (current_state.pulse_frequency != previous_state.pulse_frequency) {
+        if (current_state.wave_form != previous_state.wave_form ||
+            current_state.sine_frequency != previous_state.sine_frequency ||
+            current_state.sine_amplitude != previous_state.sine_amplitude ||
+            current_state.pulse_frequency != previous_state.pulse_frequency ||
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+        }
+        switch (current_state.wave_form) {
+            case sine:
+
+                break;
+            case pulse:
                // ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
-            } else if (current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
                 ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+                break;
+            default:
+                BIOPutStrg("\rInvalid Mode! ");
             }
 
             switch (current_state.wave_form) {
@@ -261,7 +267,11 @@ static void appTaskFunctionDisplay(void *p_arg) {
             BIOPutStrg("%");
 
             /* Save current state to previous_state for next iteration */
-            previous_state = current_state;
+            //previous_state = current_state;
+            previous_state.wave_form = current_state.wave_form;
+            previous_state.sine_frequency = current_state.sine_frequency;
+            previous_state.pulse_frequency = previous_state.pulse_frequency;
+            previous_state.pulse_duty_cycle = previous_state.pulse_duty_cycle;
         }
         /* Delay 250ms before next update */
     OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);

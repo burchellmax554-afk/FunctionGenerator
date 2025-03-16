@@ -19,6 +19,7 @@
 #include "FRDM_MCXN947ClkCfg.h"
 #include "CTIMER.h"
 #include "state.h"
+#include "BasicIO.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -93,7 +94,6 @@ void ctUpdateDutyCycle(INT32U freq, INT32U dutyCycle){
     dutyValue = 100 - dutyCycle; // Save the duty cycle
     periodValue = 150000000 / freq;
     CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty cycle change
-
     // Reset counter to apply
     CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
     CTIMER0->TC = 0; // Reset counter
