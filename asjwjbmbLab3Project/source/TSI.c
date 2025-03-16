@@ -94,11 +94,14 @@ void TSISwap(void){
     switch (current_state.wave_form){
     case sine:
         current_state.wave_form = pulse;
+        current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt;
         break;
     case pulse:
         current_state.wave_form = sine;
+        current_state.sine_amplitude = SINE.qeCnt;
         break;
     default:
         current_state. wave_form = sine;
+        current_state.sine_amplitude = SINE.qeCnt;
     }
 }

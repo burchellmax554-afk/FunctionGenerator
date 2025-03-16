@@ -102,7 +102,7 @@ void DMAinit(void){
         CTIMER2->TCR = CTIMER_TCR_CEN(0);  /* Disable timer */
         CTIMER2->MCR = CTIMER_MCR_MR0R(1); /* Set CTIMER2 to reset counter on match 0 */
         CTIMER2->PR = CTIMER_PR_PRVAL(0);  /* Set prescale to divide by 1) */
-        CTIMER2->MR[0] = CTIMER_MR_MATCH(2000 - 1); /* Set MR0 to give CTIMER2 a 48000-cycle period */
+        CTIMER2->MR[0] = CTIMER_MR_MATCH(3125 - 1); /* Set MR0 to give CTIMER2 a 48000-cycle period */
         CTIMER2->TCR |= CTIMER_TCR_CEN(1); /* Enable CTIMER2 */
 
         //Input source is CTIMER2 Match 0

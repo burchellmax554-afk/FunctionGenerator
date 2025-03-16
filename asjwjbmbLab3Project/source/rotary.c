@@ -13,8 +13,7 @@
 /******************************************************************************************
 * Private Global Variables
 ******************************************************************************************/
-INT16S qeCnt;
-INT16S qeXCnt = (CNT_MAX*EDGE_DIV)/2;
+//INT16S qeXCnt = (CNT_MAX*EDGE_DIV)/2;
 
 
 /******************************************************************************************
@@ -25,8 +24,9 @@ INT16S qeXCnt = (CNT_MAX*EDGE_DIV)/2;
 void qeCntOutTask(void) {
     DB3_TURN_ON();
     /* get difference count and add */
+    /*
     qeXCnt = qeXCnt + (INT16S)(ENC0->POSD);
-    /* control max and min values */
+     //control max and min values
     if (current_state.wave_form == pulse) {
         // If pulse mode, increase CNT_MAX to 100 for finer control
         if(qeXCnt > 100 * EDGE_DIV) {
@@ -42,8 +42,34 @@ void qeCntOutTask(void) {
             qeXCnt = CNT_MIN;
         }
     }
+    */
     /* Output final count */
-    qeCnt = qeXCnt / EDGE_DIV;
+    switch(current_state.wave_form){
+    case sine:
+        SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
+        if(SINE.qeXCnt > CNT_MAX * EDGE_DIV) {
+                    SINE.qeXCnt = CNT_MAX * EDGE_DIV;
+                } else if(SINE.qeXCnt < CNT_MIN) {
+                    SINE.qeXCnt = CNT_MIN;
+                }
+
+        SINE.qeCnt = SINE.qeXCnt / EDGE_DIV;
+        updateSine();
+        break;
+    case pulse:
+        PULSE.qeXCnt = PULSE.qeXCnt + (INT16S)(ENC0->POSD);
+        if(PULSE.qeXCnt > 100 * EDGE_DIV) {
+                    PULSE.qeXCnt = 100 * EDGE_DIV;
+                } else if(PULSE.qeXCnt < CNT_MIN) {
+                    PULSE.qeXCnt = CNT_MIN;
+                }
+        PULSE.qeCnt = PULSE.qeXCnt / EDGE_DIV;
+        updatePulseTrain();
+        break;
+    default:
+        SINE.qeCnt = SINE.qeXCnt / EDGE_DIV;
+
+    }
     DB3_TURN_OFF();
 }
 /******************************************************************************************
@@ -75,17 +101,15 @@ void qeQDCInit(void) {
 ******************************************************************************************/
 void updateSine(void) {
     // Update amplitude based on current count (qeCnt)
-    current_state.sine_amplitude = qeCnt;
+    current_state.sine_amplitude = SINE.qeCnt;
 }
 /******************************************************************************************
 * updatePulseTrain() - Update the duty cycle of the pulse-train based on rotary control.
 ******************************************************************************************/
 void updatePulseTrain(void) {
-    // Update duty cycle based on current count (qeCnt)
+    // Update duty cycle based on current count (qeCnt)                                                                          ++++++++++++++++++++++++++++++++
 
-//FIX THIS PLEASE                                                                               ++++++++++++++++++++++++++++++++
-
-    //current_state.pulse_duty_cycle = qeCnt ;  // Scale to match 0-100% duty cycle
+    current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt ;  // Scale to match 0-100% duty cycle
     // Remove in  final program
 //    BIOPutStrg("\r\nPulse Duty Cycle: ");
 //    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)

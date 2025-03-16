@@ -208,11 +208,11 @@ static void appTaskFunctionDisplay(void *p_arg) {
         if (current_state.wave_form != previous_state.wave_form) {
                 //Empty for now
             } else if (current_state.sine_frequency != previous_state.sine_frequency) {
-                ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+                //ctUpdateFrequency(current_state.sine_frequency, current_state.sine_amplitude);
             } else if (current_state.sine_amplitude != previous_state.sine_amplitude) {
-               // ctUpdateFrequency(current_state.sine_frequency, current_state.sine_amplitude);
+               //ctUpdateDutyCycle(current_state.sine_frequency, current_state.sine_amplitude);
             } else if (current_state.pulse_frequency != previous_state.pulse_frequency) {
-                ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+               // ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
             } else if (current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
                 ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
             }
@@ -291,6 +291,7 @@ static void appTaskTouchDetection(void *p_arg) {
     while (1) {
         if (TSITouchGet() ==  1) {
             TSISwap();  // Swap the waveform if touch is detected
+
         }
 
         // Delay to avoid overloading the system

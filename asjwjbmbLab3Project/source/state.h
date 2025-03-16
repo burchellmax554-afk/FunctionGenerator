@@ -26,8 +26,13 @@ extern SystemState current_state;  // Declare current_state as an external varia
 extern  SystemState previous_state;
 extern SystemState defaultedstate;
 
-extern INT16S qeCnt;        // Declare as external variable
-extern INT16S qeXCnt;       // Declare as external variable
+typedef struct{
+    INT16S qeCnt;
+    INT16S qeXCnt;
+} rotary;
+
+extern rotary SINE;// Declare as external variable
+extern rotary PULSE;
 
 typedef struct{
     INT16U baseline;
