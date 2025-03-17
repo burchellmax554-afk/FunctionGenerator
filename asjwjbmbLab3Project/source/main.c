@@ -344,7 +344,7 @@ void appEnterCheck(void *p_arg) {
                     BIOOutCRLF();
                     break;
                 default:
- //SINE FIX UP                   ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+                    ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                     break;
                 }
             }
