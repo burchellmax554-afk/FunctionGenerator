@@ -1,7 +1,7 @@
 /*
  * CTIMER.c
  *
- *  Last modified 12MAR2025 by John Brown
+ *  Last modified 16MAR2025 by John Brown & Jake Sheckler
  *      Authors: Todd Morton, Sam Johnson
  *
  */
@@ -101,27 +101,3 @@ void ctUpdateDutyCycle(INT32U freq, INT32U dutyCycle){
     CTIMER0->TC = 0; // Reset counter
     CTIMER0->TCR = CTIMER_TCR_CEN(1); // Enable timer
 }
-int strToInt(const char *str) {
-    int result = 0;
-    int i = 0;
-    int sign = 1;
-
-    // Check for a negative number
-    if (str[0] == '-') {
-        sign = -1;
-        i++;
-    }
-
-    // Convert each character to the corresponding integer
-    while (str[i] != '\0') {
-        if (str[i] < '0' || str[i] > '9') {
-            // Handle invalid characters (could return an error or break)
-            return -1;  // Return -1 to indicate invalid input
-        }
-        result = result * 10 + (str[i] - '0');
-        i++;
-    }
-
-    return result * sign;
-}
-

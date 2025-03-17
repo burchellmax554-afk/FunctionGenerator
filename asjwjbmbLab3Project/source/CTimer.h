@@ -1,8 +1,8 @@
 /*
  * CTIMER.h
  *
- *  Created on: Mar 2, 2025, Last modified on 02MAR2025
- *      Author: John Brown
+ *  Created on: Mar 2, 2025, Last modified on 016MAR2025
+ *      Author: John Brown & Jake Sheckler
  */
 #ifndef CTIMER_H_
 #define CTIMER_H_
@@ -11,6 +11,5 @@
 void ctUpdateFrequency(INT32U freq, INT32U dutyValue);
 void ctUpdateDutyCycle(INT32U freq, INT32U dutyValue);
 void ctInit(void);
-int strToInt(const char *str);
 /*****************************************************************************************/
 #endif /* CTIMER_H_ */

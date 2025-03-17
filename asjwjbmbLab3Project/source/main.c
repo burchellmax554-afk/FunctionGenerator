@@ -398,8 +398,18 @@ void appEnterCheck(void *p_arg) {
                 }
 
                 // Update the pulse frequency
-                current_state.pulse_frequency = (INT32U)number;
-                ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+                switch(current_state.wave_form){
+                case sine:
+                    current_state.sine_frequency = (INT32U)number;
+  //SINE FIX UP                  ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+                    break;
+                case pulse:
+                    current_state.pulse_frequency = (INT32U)number;
+                    ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+                    break;
+                default:
+ //SINE FIX UP                   ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+                }
             }
 
         } else if (input != '\0') {  // Avoid breaking if no input
