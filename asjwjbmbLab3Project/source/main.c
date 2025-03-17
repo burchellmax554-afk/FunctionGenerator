@@ -25,7 +25,6 @@ static OS_TCB appTaskFunctionDisplayTCB;
 static OS_TCB appTaskStateManagementTCB;
 static OS_TCB appTaskRotaryTCB;
 static OS_TCB appTaskTouchDetectionTCB;
-static OS_TCB appTaskTSITCB;
 static OS_TCB appTaskEnterCheckTCB;
 /****************************************************************************************
 * Allocate task stack space.
@@ -35,7 +34,6 @@ static CPU_STK appTaskFunctionDisplayStk[APP_CFG_TASK_FUNCTION_DISPLAY_STK_SIZE]
 static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE];
 static CPU_STK appTaskRotaryStk[APP_CFG_TASK_ROTARY_STK_SIZE];
 static CPU_STK appTaskTouchDetectionStk[APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE];
-static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
 static CPU_STK appTaskEnterCheckStk[APP_CFG_TASK_ENTER_CHECK_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
@@ -45,7 +43,6 @@ static void appTaskFunctionDisplay(void *p_arg);
 static void appTaskStateManagement(void *p_arg);
 static void appTaskRotary(void *p_arg);
 static void appTaskTouchDetection(void *p_arg);
-static void appTaskTSI(void *p_arg);
 static void appEnterCheck(void *p_arg);
 /****************************************************************************************
 Defined Variables
@@ -313,33 +310,6 @@ static void appTaskTouchDetection(void *p_arg) {
 /****************************************************************************************
 * Credit: Jake Sheckler
 ****************************************************************************************/
-static void appTaskTSI(void *p_arg){
-    OS_ERR os_err;
-    (void)p_arg;
-    while(1){
-        if (TSITouchGet() ==  1) {
-            TSISwap();  // Swap the waveform if touch is detected
-
-        DB0_TURN_ON(); /* debug bit measures sensor scan time */
-        /*start a scan sequence */
-        TSI0->GENCS |= TSI_GENCS_SWTS(1);
-        /* wait for scan to finish */
-        while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){}
-        DB0_TURN_OFF();
-
-        TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
-        /* Process channel */
-        if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
-            tsiLevels.tsiFlag = 1;
-        }else{
-            tsiLevels.tsiFlag = 0;
-    }
-
-}
-    OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
-        assert(os_err == OS_ERR_NONE);
-    }
-}
 void appEnterCheck(void *p_arg) {
     INT8C input;
     OS_ERR os_err;
