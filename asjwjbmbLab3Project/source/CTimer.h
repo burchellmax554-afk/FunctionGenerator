@@ -11,5 +11,6 @@
 void ctUpdateFrequency(INT32U freq, INT32U dutyValue);
 void ctUpdateDutyCycle(INT32U freq, INT32U dutyValue);
 void ctInit(void);
+int strToInt(const char *str);
 /*****************************************************************************************/
 #endif /* CTIMER_H_ */

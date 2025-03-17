@@ -382,3 +382,4 @@ static INT8C bioHtoA(INT8U hnib){
     }
     return asciic;
 }
+

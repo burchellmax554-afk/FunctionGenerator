@@ -23,6 +23,7 @@ static OS_TCB appTaskStateManagementTCB;
 static OS_TCB appTaskRotaryTCB;
 static OS_TCB appTaskTouchDetectionTCB;
 static OS_TCB appTaskTSITCB;
+static OS_TCB appTaskEnterCheckTCB;
 /****************************************************************************************
 * Allocate task stack space.
 ****************************************************************************************/
@@ -32,6 +33,7 @@ static CPU_STK appTaskStateManagementStk[APP_CFG_TASK_STATE_MANAGEMENT_STK_SIZE]
 static CPU_STK appTaskRotaryStk[APP_CFG_TASK_ROTARY_STK_SIZE];
 static CPU_STK appTaskTouchDetectionStk[APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE];
 static CPU_STK appTaskTSIStk[APP_CFG_TASK_TSI_STK_SIZE];
+static CPU_STK appTaskEnterCheckStk[APP_CFG_TASK_ENTER_CHECK_STK_SIZE];
 /****************************************************************************************
 * Task Function Prototypes.
 ****************************************************************************************/
@@ -41,6 +43,7 @@ static void appTaskStateManagement(void *p_arg);
 static void appTaskRotary(void *p_arg);
 static void appTaskTouchDetection(void *p_arg);
 static void appTaskTSI(void *p_arg);
+static void appEnterCheck(void *p_arg);
 /****************************************************************************************
 Defined Variables
 ****************************************************************************************/
@@ -174,6 +177,21 @@ static void appStartTask(void *p_arg) {
                     (OS_OPT_TASK_NONE),
                     &os_err);
        assert(os_err == OS_ERR_NONE);
+
+   OSTaskCreate(&appTaskEnterCheckTCB,                  /* Create Task 1                    */
+                  "App Task EnterCheck ",
+                  appEnterCheck,
+                  (void *) 0,
+                  APP_CFG_TASK_ENTER_CHECK_PRIO,
+                  &appTaskEnterCheckStk[0],
+                  (APP_CFG_TASK_ENTER_CHECK_STK_SIZE / 10u),
+                  APP_CFG_TASK_ENTER_CHECK_STK_SIZE,
+                  0,
+                  0,
+                  (void *) 0,
+                  (OS_OPT_TASK_NONE),
+                  &os_err);
+      assert(os_err == OS_ERR_NONE);
 
     OSTaskDel((OS_TCB *)0, &os_err); /* Delete start task */
     assert(os_err == OS_ERR_NONE);
@@ -332,12 +350,62 @@ void appTaskTSI(void *p_arg){
     assert(os_err == OS_ERR_NONE);
     }
 }
-
-void appEnterCheck(void *p_arg){
+/*
+void appEnterCheck(void *p_arg) {
+    char input;
     OS_ERR os_err;
     (void)p_arg;
-    while(1){
-        OSTimeDly(21, OS_OPT_TIME_PERIODIC, &os_err);
 
+    while (1) {
+        input = BIORead();  // Use non-blocking read
+
+        if (input == '\r') {  // Check if Enter key (carriage return) was pressed
+            BIOOutCRLF();
+            INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
+            INT8U Num_lngth = 10;
+
+
+        } else if (input != '\0') {  // Avoid breaking if no input
+            // Perform other actions here
+        }
+
+        OSTimeDly(21, OS_OPT_TIME_PERIODIC, &os_err);  // Yield control to other tasks periodically
+        assert(os_err == OS_ERR_NONE);  // Check for errors during delay
     }
 }
+*/
+void appEnterCheck(void *p_arg) {
+    INT8C input;
+    OS_ERR os_err;
+    (void)p_arg;
+
+    while (1) {
+
+        input = BIORead();  // Use non-blocking read
+
+        if (input == '\r') {  // Check if Enter key (carriage return) was pressed
+            BIOOutCRLF();
+            BIOPutStrg("state f: ");
+            INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
+            INT8U Num_lngth = 10;
+            if (BIOGetStrg(Num_lngth, input_strg) == 0) {  // 0 means input ended with Enter key
+                // Convert the input string to an integer
+                INT32U number = 0;
+                INT8U i = 0;
+                while (input_strg[i] != '\0' && i < 10) {
+                    number = (number * 10) + (input_strg[i] - '0');  // Simple atoi-like conversion
+                   i++;
+                }
+
+                // Update the pulse frequency
+                current_state.pulse_frequency = (INT32U)number;
+                ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+            }
+
+        } else if (input != '\0') {  // Avoid breaking if no input
+            // Perform other actions if necessary
+        }
+        OSTimeDly(21, OS_OPT_TIME_DLY, &os_err);  // Use OS_OPT_TIME_DLY instead
+        assert(os_err == OS_ERR_NONE);
+        }
+    }
