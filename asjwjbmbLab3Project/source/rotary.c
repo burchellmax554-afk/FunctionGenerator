@@ -9,16 +9,15 @@
 #include "sineTable.h"
 #include "state.h"
 #include "rotary.h"
-#include "CTimer.h"
 
 /******************************************************************************************
 * qeCntOutTask - Timeslice task that uses the position difference register to add or
 *                subtract counts. Uses EDGE_DIV to make it more or less sensitive.
 *                Output is 0-20. Samples every SLICE_PER.
-*               Credit: Max Burchell
 ******************************************************************************************/
 void qeCntOutTask(void) {
     DB3_TURN_ON();
+    /* Output final count */
     switch(current_state.wave_form){
     case sine:
         SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
@@ -52,7 +51,6 @@ void qeCntOutTask(void) {
 *               For input on J3_1 (PHA) and J3_3 (PHB) on FRDM-N947 board.
 *               Note the old acronym was ENC and the new acronym is QDC. The RM uses both.
 *               Code below uses the old acronym.
-*               Credit: Max Burchell
 ******************************************************************************************/
 void qeQDCInit(void) {
     /* Enable clock for QDC0, PORT1, and PORT2 */
@@ -74,7 +72,6 @@ void qeQDCInit(void) {
 }
 /******************************************************************************************
 * updateSine() - Update the amplitude of the sine wave based on rotary control.
-* Credit: Max Burchell
 ******************************************************************************************/
 void updateSine(void) {
     // Update amplitude based on current count (qeCnt)
@@ -82,14 +79,9 @@ void updateSine(void) {
 }
 /******************************************************************************************
 * updatePulseTrain() - Update the duty cycle of the pulse-train based on rotary control.
-* Credit: Max Burchell
 ******************************************************************************************/
 void updatePulseTrain(void) {
     // Update duty cycle based on current count (qeCnt)                                                                          ++++++++++++++++++++++++++++++++
 
     current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt ;  // Scale to match 0-100% duty cycle
-    ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
-    // Remove in  final program
-//    BIOPutStrg("\r\nPulse Duty Cycle: ");
-//    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)
 }
