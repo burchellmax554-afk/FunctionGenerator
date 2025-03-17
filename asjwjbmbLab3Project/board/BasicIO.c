@@ -3,21 +3,33 @@
  * information from a serial port. In this case UART2 configured for the
  * MCULink debug USB serial port. FRDM-MCXN947 board.
  * v1.1
- *  Created by: Todd Morton, 05/04/2024
- *******************************************************************************************
-* Project master header file
-********************************************************************/
+ *  Todd Morton, 05/04/2024
+ * v1.2
+ *  Added non-blocking options using CsOS time delays. To use the non-blocking functions
+ *  define USE_NONBLOCKING. This option requires CsOS RTOS. TDM, 02/24/2025
+ *****************************************************************************************
+* Header files
+*****************************************************************************************/
 #include "MCUType.h"
 #include "BasicIO.h"
 #include "math.h"
 
-/*******************************************************************************************
+/*****************************************************************************************
+* define USE_NONBLOCKING to use non-blocking input and output. Requires CsOS RTOS.
+*****************************************************************************************/
+#define USE_NONBLOCKING
+
+#ifdef USE_NONBLOCKING
+#include "os.h"
+#endif
+
+/*****************************************************************************************
 * Private Resources
-*******************************************************************************************/
+*****************************************************************************************/
 static INT8C bioHtoA(INT8U hnib);   //Convert nibble to ascii
 static INT8U bioIsHex(INT8C c);
 static INT8U bioHtoB(INT8C c);
-/*******************************************************************************************
+/*****************************************************************************************
  * void BIOOpen(INT8U rate) - Initializes UART to operate at a specified rate.
  * MCU: MCXN947, LPUART4 configured for debugger USB.
  * Clock: Assumes connection to pll_clk_div is set to pll0_clk/3 = 150MHz/3 = 50MHz
@@ -30,9 +42,9 @@ static INT8U bioHtoB(INT8C c);
  ******************************************************************************************/
 void BIOOpen(INT8U rate){
 
-	SYSCON->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_PORT1(1);
-	SYSCON->FCCLKSEL[4] = SYSCON_FCCLKSEL_SEL(1);			//PLL div clk, 50MHz
-	SYSCON->AHBCLKCTRLSET[1] = SYSCON_AHBCLKCTRL1_FC4(1);
+    SYSCON->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_PORT1(1);
+    SYSCON->FCCLKSEL[4] = SYSCON_FCCLKSEL_SEL(1);           //PLL div clk, 50MHz
+    SYSCON->AHBCLKCTRLSET[1] = SYSCON_AHBCLKCTRL1_FC4(1);
 
     PORT1->PCR[8]=PORT_PCR_MUX(2)|PORT_PCR_IBE(1);    //ties P1_8 to RxD, enable buffer
     PORT1->PCR[9]=PORT_PCR_MUX(2)|PORT_PCR_IBE(1);    //ties P1_9 to TxD, enable buffer
@@ -46,19 +58,19 @@ void BIOOpen(INT8U rate){
         LPUART4->BAUD = LPUART_BAUD_SBR(168)|LPUART_BAUD_OSR(30); //30 results in OSR of 31
         break;
     case(BIO_BIT_RATE_19200):
-		LPUART4->BAUD = LPUART_BAUD_SBR(84)|LPUART_BAUD_OSR(30);
+        LPUART4->BAUD = LPUART_BAUD_SBR(84)|LPUART_BAUD_OSR(30);
         break;
     case(BIO_BIT_RATE_38400):
-		LPUART4->BAUD = LPUART_BAUD_SBR(42)|LPUART_BAUD_OSR(30);
+        LPUART4->BAUD = LPUART_BAUD_SBR(42)|LPUART_BAUD_OSR(30);
         break;
     case(BIO_BIT_RATE_57600):
-		LPUART4->BAUD = LPUART_BAUD_SBR(28)|LPUART_BAUD_OSR(30);
+        LPUART4->BAUD = LPUART_BAUD_SBR(28)|LPUART_BAUD_OSR(30);
         break;
     case(BIO_BIT_RATE_115200):
-		LPUART4->BAUD = LPUART_BAUD_SBR(14)|LPUART_BAUD_OSR(30);
+        LPUART4->BAUD = LPUART_BAUD_SBR(14)|LPUART_BAUD_OSR(30);
         break;
     default:    //Default to 115200bps
-		LPUART4->BAUD = LPUART_BAUD_SBR(14)|LPUART_BAUD_OSR(30);
+        LPUART4->BAUD = LPUART_BAUD_SBR(14)|LPUART_BAUD_OSR(30);
         break;
     }
 
@@ -97,7 +109,14 @@ INT8C BIORead(void){
 *******************************************************************************************/
 INT8C BIOGetChar(void){
     INT8C c;
+#ifdef USE_NONBLOCKING
+    OS_ERR os_err;
+#endif
+
     do{
+#ifdef USE_NONBLOCKING
+        OSTimeDly(25,OS_OPT_TIME_DLY,&os_err);
+#endif
         c = BIORead();
     }while(c == '\0');
     return c;
@@ -110,7 +129,14 @@ INT8C BIOGetChar(void){
 *    parameter: c is the ASCII character to be sent
 *******************************************************************************************/
 void BIOWrite(INT8C c){
-    while ((LPUART4->STAT & LPUART_STAT_TDRE_MASK)==0){} //waits for space on FIFO
+#ifdef USE_NONBLOCKING
+    OS_ERR os_err;
+#endif
+    while ((LPUART4->STAT & LPUART_STAT_TDRE_MASK)==0){
+#ifdef USE_NONBLOCKING
+        OSTimeDly(10,OS_OPT_TIME_DLY,&os_err);
+#endif
+    } //waits for space on FIFO
     LPUART4->DATA = (INT32U)c;
 }
 
@@ -212,7 +238,6 @@ void BIOOutDecWord (INT32U binword, INT8U field, BIO_OUTDEC_MODE mode){
     }
 }
 
-
 /*******************************************************************************************
 * BIOGetStrg() - Inputs a string and stores it into an array.
 *
@@ -220,6 +245,7 @@ void BIOOutDecWord (INT32U binword, INT8U field, BIO_OUTDEC_MODE mode){
 *              is received or strglen is exceeded.
 *              Only printable characters are recognized except carriage return and backspace
 *              Backspace erases displayed character and array character.
+*              Delete is same as backspace, for Macs.
 *              A NULL is always placed at the end of the string.
 *              All printable characters are echoed.
 * Return value: 0 -> if ended with CR
@@ -229,34 +255,31 @@ void BIOOutDecWord (INT32U binword, INT8U field, BIO_OUTDEC_MODE mode){
 *******************************************************************************************/
 INT8U BIOGetStrg(INT8U strglen,INT8C *const strg){
    INT8U charnum = 0;
-   INT8C c;
+   INT8C c = '\0';
    INT8U rvalue;
-   c = BIOGetChar();
    while((c != '\r') && ((charnum < (strglen)))){
+       c = BIOGetChar();
        if((' ' <= c) && ('~' >= c) && (charnum != (strglen-1))){
            BIOWrite(c);
            strg[charnum] = c;
            charnum++;
-           c=BIOGetChar();
-       }else if((c == '\b') && (charnum > 0)){
+       }else if(((c == '\b')||(c=='\x7f')) && (charnum > 0)){
            BIOWrite('\b');
            BIOWrite(' ');
            BIOWrite('\b');
-    	   charnum--;
-           c=BIOGetChar();
+           charnum--;
        }else if((' ' <= c) && ('~' >= c) && (charnum == (strglen-1))){
-    	   charnum++;
+           charnum++; //pop out of loop with charnum set for null
        }else{ /*non-printable character or BS at first character - ignore */
-           c=BIOGetChar();
        }
    }
-   BIOOutCRLF();
+   strg[charnum] = '\0';
    if(c == '\r'){
        rvalue = 0;
-       strg[charnum] = '\0';
    }else{
        rvalue = 1;
    }
+   BIOOutCRLF();
    return rvalue;
 }
 
@@ -382,4 +405,3 @@ static INT8C bioHtoA(INT8U hnib){
     }
     return asciic;
 }
-

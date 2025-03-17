@@ -9,6 +9,7 @@
 #include "sineTable.h"
 #include "state.h"
 #include "rotary.h"
+#include "CTimer.h"
 
 /******************************************************************************************
 * qeCntOutTask - Timeslice task that uses the position difference register to add or
@@ -18,7 +19,6 @@
 ******************************************************************************************/
 void qeCntOutTask(void) {
     DB3_TURN_ON();
-    /* Output final count */
     switch(current_state.wave_form){
     case sine:
         SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
@@ -85,5 +85,11 @@ void updateSine(void) {
 * Credit: Max Burchell
 ******************************************************************************************/
 void updatePulseTrain(void) {
-    // Update duty cycle based on current count (qeCnt)                                                                         
+    // Update duty cycle based on current count (qeCnt)                                                                          ++++++++++++++++++++++++++++++++
+
+    current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt ;  // Scale to match 0-100% duty cycle
+    ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+    // Remove in  final program
+//    BIOPutStrg("\r\nPulse Duty Cycle: ");
+//    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)
 }

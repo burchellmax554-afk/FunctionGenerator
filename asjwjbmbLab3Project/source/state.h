@@ -2,6 +2,7 @@
 * Credit: Everyone
 ****************************************************************************************/
 #include "MCUType.h"
+#include "os.h"
 
 #ifndef STATE_H
 #define STATE_H
@@ -45,5 +46,6 @@ typedef struct{
 }TOUCH_LEVEL_T;
 
 extern TOUCH_LEVEL_T tsiLevels;
+
 
 #endif /* STATE_H */

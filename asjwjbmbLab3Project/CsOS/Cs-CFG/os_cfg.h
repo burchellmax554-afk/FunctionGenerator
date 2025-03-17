@@ -52,7 +52,7 @@
 #define OS_CFG_OBJ_CREATED_CHK_EN                  1u           /* Enable (1) or Disable (0) object created checks                       */
 #define OS_CFG_TS_EN                               1u           /* Enable (1) or Disable (0) time stamping                               */
 
-#define OS_CFG_PRIO_MAX                           32u           /* Defines the maximum number of task priorities (see OS_PRIO data type) */
+#define OS_CFG_PRIO_MAX                           12u           /* Defines the maximum number of task priorities (see OS_PRIO data type) */
 
 #define OS_CFG_SCHED_LOCK_TIME_MEAS_EN             0u           /* Include code to measure scheduler lock time                           */
 #define OS_CFG_SCHED_ROUND_ROBIN_EN                0u           /* Include code for Round-Robin scheduling                               */
@@ -61,17 +61,17 @@
 
 
                                                                 /* ---------------------------- DATA QUEUES ---------------------------- */
-#define OS_CFG_DATA_EN                             1u           /* Enable (1) or Disable (0) code generation for DATA QUEUES             */
-#define OS_CFG_DATA_DEL_EN                         1u           /*     Include code for OSDataDel()                                      */
-#define OS_CFG_DATA_FLUSH_EN                       1u           /*     Include code for OSDataFlush()                                    */
-#define OS_CFG_DATA_PEND_ABORT_EN                  1u           /*     Include code for OSDataPendAbort()                                */
-#define OS_CFG_DATA_CREATE_EXT                     1u           /*     Include code for OSDataCreateExt()                                */
+#define OS_CFG_DATA_EN                             0u           /* Enable (1) or Disable (0) code generation for DATA QUEUES             */
+#define OS_CFG_DATA_DEL_EN                         0u           /*     Include code for OSDataDel()                                      */
+#define OS_CFG_DATA_FLUSH_EN                       0u           /*     Include code for OSDataFlush()                                    */
+#define OS_CFG_DATA_PEND_ABORT_EN                  0u           /*     Include code for OSDataPendAbort()                                */
+#define OS_CFG_DATA_CREATE_EXT                     0u           /*     Include code for OSDataCreateExt()                                */
 
                                                                 /* --------------------------- EVENT FLAGS ----------------------------- */
-#define OS_CFG_FLAG_EN                             1u           /* Enable (1) or Disable (0) code generation for EVENT FLAGS             */
-#define OS_CFG_FLAG_DEL_EN                         1u           /*     Include code for OSFlagDel()                                      */
-#define OS_CFG_FLAG_MODE_CLR_EN                    1u           /*     Include code for Wait on Clear EVENT FLAGS                        */
-#define OS_CFG_FLAG_PEND_ABORT_EN                  1u           /*     Include code for OSFlagPendAbort()                                */
+#define OS_CFG_FLAG_EN                             0u           /* Enable (1) or Disable (0) code generation for EVENT FLAGS             */
+#define OS_CFG_FLAG_DEL_EN                         0u           /*     Include code for OSFlagDel()                                      */
+#define OS_CFG_FLAG_MODE_CLR_EN                    0u           /*     Include code for Wait on Clear EVENT FLAGS                        */
+#define OS_CFG_FLAG_PEND_ABORT_EN                  0u           /*     Include code for OSFlagPendAbort()                                */
 
 
                                                                 /* ------------------------ MEMORY MANAGEMENT -------------------------  */
@@ -86,26 +86,26 @@
 
 
                                                                 /* -------------------------- MESSAGE QUEUES --------------------------  */
-#define OS_CFG_Q_EN                                1u           /* Enable (1) or Disable (0) code generation for QUEUES                  */
-#define OS_CFG_Q_DEL_EN                            1u           /*     Include code for OSQDel()                                         */
-#define OS_CFG_Q_FLUSH_EN                          1u           /*     Include code for OSQFlush()                                       */
-#define OS_CFG_Q_PEND_ABORT_EN                     1u           /*     Include code for OSQPendAbort()                                   */
-#define OS_CFG_Q_CREATE_EXT                        1u           /*     Include code for OSQCreateExt()                                   */
+#define OS_CFG_Q_EN                                0u           /* Enable (1) or Disable (0) code generation for QUEUES                  */
+#define OS_CFG_Q_DEL_EN                            0u           /*     Include code for OSQDel()                                         */
+#define OS_CFG_Q_FLUSH_EN                          0u           /*     Include code for OSQFlush()                                       */
+#define OS_CFG_Q_PEND_ABORT_EN                     0u           /*     Include code for OSQPendAbort()                                   */
+#define OS_CFG_Q_CREATE_EXT                        0u           /*     Include code for OSQCreateExt()                                   */
 
 
                                                                 /* ---------------------------- SEMAPHORES ----------------------------- */
 #define OS_CFG_SEM_EN                              1u           /* Enable (1) or Disable (0) code generation for SEMAPHORES              */
-#define OS_CFG_SEM_DEL_EN                          1u           /*     Include code for OSSemDel()                                       */
-#define OS_CFG_SEM_PEND_ABORT_EN                   1u           /*     Include code for OSSemPendAbort()                                 */
-#define OS_CFG_SEM_SET_EN                          1u           /*     Include code for OSSemSet()                                       */
-#define OS_CFG_SEM_CREATE_EXT                      1u           /*     Include code for OSSemCreateExt()                                 */
+#define OS_CFG_SEM_DEL_EN                          0u           /*     Include code for OSSemDel()                                       */
+#define OS_CFG_SEM_PEND_ABORT_EN                   0u           /*     Include code for OSSemPendAbort()                                 */
+#define OS_CFG_SEM_SET_EN                          0u           /*     Include code for OSSemSet()                                       */
+#define OS_CFG_SEM_CREATE_EXT                      0u           /*     Include code for OSSemCreateExt()                                 */
 
 
                                                                 /* -------------------------- TASK MANAGEMENT -------------------------- */
 #define OS_CFG_STAT_TASK_EN                        1u           /* Enable (1) or Disable (0) the statistics task                         */
 #define OS_CFG_STAT_TASK_STK_CHK_EN                1u           /*     Check task stacks from the statistic task                         */
 
-#define OS_CFG_TASK_CHANGE_PRIO_EN                 1u           /* Include code for OSTaskChangePrio()                                   */
+#define OS_CFG_TASK_CHANGE_PRIO_EN                 0u           /* Include code for OSTaskChangePrio()                                   */
 #define OS_CFG_TASK_DEL_EN                         1u           /* Include code for OSTaskDel()                                          */
 #define OS_CFG_TASK_PROFILE_EN                     0u           /* Include variables in OS_TCB for profiling                             */
 #define OS_CFG_TASK_Q_EN                           1u           /* Include code for OSTaskQXXXX()                                        */
@@ -116,17 +116,17 @@
 #define OS_CFG_TASK_STK_REDZONE_DEPTH              8u           /* Depth of the stack redzone                                            */
 #define OS_CFG_TASK_STK_EXT_INFO                   1u           /* Enables the StkBasePtr and StkSize TCB members                        */
 
-#define OS_CFG_TASK_SEM_PEND_ABORT_EN              1u           /* Include code for OSTaskSemPendAbort()                                 */
-#define OS_CFG_TASK_SUSPEND_EN                     1u           /* Include code for OSTaskSuspend() and OSTaskResume()                   */
+#define OS_CFG_TASK_SEM_PEND_ABORT_EN              0u           /* Include code for OSTaskSemPendAbort()                                 */
+#define OS_CFG_TASK_SUSPEND_EN                     0u           /* Include code for OSTaskSuspend() and OSTaskResume()                   */
 
 
                                                                 /* ------------------ TASK LOCAL STORAGE MANAGEMENT -------------------  */
 #define OS_CFG_TLS_TBL_SIZE                        0u           /* Include code for Task Local Storage (TLS) registers                   */
 
 
-                                                                /* ------------------------- TIME MANAGEMENT --------------------------  */
-#define OS_CFG_TIME_DLY_HMSM_EN                    1u           /* Include code for OSTimeDlyHMSM()                                      */
-#define OS_CFG_TIME_DLY_RESUME_EN                  1u           /* Include code for OSTimeDlyResume()                                    */
+                            //Working here                      /* ------------------------- TIME MANAGEMENT --------------------------  */
+#define OS_CFG_TIME_DLY_HMSM_EN                    0u           /* Include code for OSTimeDlyHMSM()                                      */
+#define OS_CFG_TIME_DLY_RESUME_EN                  0u           /* Include code for OSTimeDlyResume()                                    */
 
 
                                                                 /* ------------------------- TIMER MANAGEMENT -------------------------- */
