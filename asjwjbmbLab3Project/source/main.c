@@ -98,7 +98,6 @@ static void appStartTask(void *p_arg) {
     GpioDBugBitsInit();
     SwInit();
     TSIInit();
-    //TimerInit();
     ctInit();
     WaveGenInit();
 
@@ -219,7 +218,7 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.pulse_frequency != previous_state.pulse_frequency ||
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
 
-            BIOPutStrg("\033[2J\033[H"); // Clear the screen once
+            BIOPutStrg("\033[2K\033[G"); // Clear the screen once
 
             // Display sine wave info with brackets around the selected mode
             if (current_state.wave_form == sine) {
@@ -321,7 +320,6 @@ void appEnterCheck(void *p_arg) {
 
         if (input == '\r') {  // Check if Enter key (carriage return) was pressed
             BIOOutCRLF();
-            BIOPutStrg("state f: ");
             INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
             INT8U Num_lngth = 10;
             if (BIOGetStrg(Num_lngth, input_strg) == 0) {  // 0 means input ended with Enter key
@@ -336,12 +334,14 @@ void appEnterCheck(void *p_arg) {
                 // Update the pulse frequency
                 switch(current_state.wave_form){
                 case sine:
+                    BIOPutStrg("sine f: ");
                     current_state.sine_frequency = (INT32U)number;
-  //SINE FIX UP
                     break;
                 case pulse:
+                    BIOPutStrg("pulse f: ");
                     current_state.pulse_frequency = (INT32U)number;
                     ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+                    BIOOutCRLF();
                     break;
                 default:
  //SINE FIX UP                   ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
