@@ -93,12 +93,10 @@ static void appStartTask(void *p_arg) {
 
     OS_CPU_SysTickInitFreq(SystemCoreClock);
     OSStatTaskCPUUsageInit(&os_err);
-    GpioLEDGREENInit();
-    GpioLEDREDInit();
     GpioDBugBitsInit();
     SwInit();
     TSIInit();
-    TimerInit();
+    //TimerInit();
     ctInit();
     DACinit();
     DMAinit();
@@ -218,7 +216,57 @@ static void appTaskRotary(void *p_arg) {
         }
     }
 }
+static void appTaskFunctionDisplay(void *p_arg) {
+    (void)p_arg;
+    OS_ERR os_err;
+    INT8U sine_frequency_digits, amplitude_digits;
+    INT8U pulse_frequency_digits, duty_cycle_digits;
 
+    while (1) {
+        // Only proceed if there is a change in state
+        if (current_state.wave_form != previous_state.wave_form ||
+            current_state.sine_frequency != previous_state.sine_frequency ||
+            current_state.sine_amplitude != previous_state.sine_amplitude ||
+            current_state.pulse_frequency != previous_state.pulse_frequency ||
+            current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
+
+            BIOPutStrg("\033[2J\033[H"); // Clear the screen once
+
+            // Display sine wave info with brackets around the selected mode
+            if (current_state.wave_form == sine) {
+                BIOPutStrg("[sine], ");
+            } else {
+                BIOPutStrg("sine, ");
+            }
+            sine_frequency_digits = GetNumberOfDigits(current_state.sine_frequency);
+            BIOOutDecWord((INT32U)current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR); // Display sine frequency
+            BIOPutStrg("Hz, "); // Add "Hz" next to the frequency
+            amplitude_digits = GetNumberOfDigits((INT32U)current_state.sine_amplitude);
+            BIOOutDecWord((INT32U)current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR); // Display sine amplitude
+
+            // Display pulse wave info with brackets around the selected mode
+            if (current_state.wave_form == pulse) {
+                BIOPutStrg(", [pulse], ");
+            } else {
+                BIOPutStrg(", pulse, ");
+            }
+            pulse_frequency_digits = GetNumberOfDigits(current_state.pulse_frequency);
+            BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR); // Display pulse frequency
+            BIOPutStrg("Hz, "); // Add "Hz" next to the frequency
+            duty_cycle_digits = GetNumberOfDigits((INT32U)current_state.pulse_duty_cycle);
+            BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR); // Display pulse duty cycle
+            BIOPutStrg("%");
+
+            // Save the current state to previous state for comparison in the next loop
+            previous_state = current_state;
+        }
+
+        // Delay before the next update
+        OSTimeDly(500, OS_OPT_TIME_PERIODIC, &os_err);  // Delay for 500ms
+        assert(os_err == OS_ERR_NONE);
+    }
+}
+/*
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
@@ -229,39 +277,29 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.pulse_frequency != previous_state.pulse_frequency ||
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
             BIOPutStrg("\033[2J\033[H");
-        switch (current_state.wave_form) {
-            case sine:
-
-                break;
-            case pulse:
-               // ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
-                break;
-            default:
-                BIOPutStrg("\rInvalid Mode! ");
-            }
-            ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
                     break;
                 case pulse:
                    BIOPutStrg("\rsine, ");
+                   ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                     break;
                 default:
                     BIOPutStrg("\rInvalid Mode! ");
             }
 
-            /* Calculate the number of digits dynamically */
+           //  Calculate the number of digits dynamically
             INT8U sine_frequency_digits = GetNumberOfDigits(current_state.sine_frequency);
             INT8U amplitude_digits = GetNumberOfDigits((INT32U)current_state.sine_amplitude);
 
-            /* Display sine frequency, amplitude using BIOOutDecWord */
-            BIOOutDecWord((INT32U)current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+          //   Display sine frequency, amplitude using BIOOutDecWord
+            BIOOutDecWord((INT32U)current_state.sine_frequency, sine_frequency_digits, BIO_OD_MODE_AR);  // Dynamic number of digits
             BIOPutStrg("Hz, ");
-            BIOOutDecWord((INT32U)current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOOutDecWord((INT32U)current_state.sine_amplitude, amplitude_digits, BIO_OD_MODE_AR);  // Dynamic number of digits
             BIOPutStrg(", ");
 
-            /* Display pulse mode, pulse frequency, and duty cycle */
+           //  Display pulse mode, pulse frequency, and duty cycle
             switch (current_state.wave_form) {
                 case sine:
                      BIOPutStrg("pulse, ");
@@ -273,18 +311,17 @@ static void appTaskFunctionDisplay(void *p_arg) {
                      BIOPutStrg("Invalid Mode! ");
             }
 
-            /* Calculate the number of digits for pulse frequency and duty cycle dynamically */
+            // Calculate the number of digits for pulse frequency and duty cycle dynamically
             INT8U pulse_frequency_digits = GetNumberOfDigits(current_state.pulse_frequency);
             INT8U duty_cycle_digits = GetNumberOfDigits((INT32U)current_state.pulse_duty_cycle);
 
-            /* Display pulse frequency and duty cycle using BIOOutDecWord */
-            BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            // Display pulse frequency and duty cycle using BIOOutDecWord
+            BIOOutDecWord(current_state.pulse_frequency, pulse_frequency_digits, BIO_OD_MODE_AR);  // Dynamic number of digits
             BIOPutStrg("Hz, ");
-            BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  /* Dynamic number of digits */
+            BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, duty_cycle_digits, BIO_OD_MODE_AR);  // Dynamic number of digits /
             BIOPutStrg("%");
 
-            /* Save current state to previous_state for next iteration */
-            //previous_state = current_state;
+            // Save current state to previous_state for next iteration
             previous_state.wave_form = current_state.wave_form;
             previous_state.sine_frequency = current_state.sine_frequency;
             previous_state.pulse_frequency = current_state.pulse_frequency;
@@ -292,10 +329,10 @@ static void appTaskFunctionDisplay(void *p_arg) {
             previous_state.sine_amplitude = current_state.sine_amplitude;
         }
     }
-        /* Delay 250ms before next update */
-    OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
+        // Delay 250ms before next update
+    OSTimeDly(500, OS_OPT_TIME_PERIODIC, &os_err);
     assert(os_err == OS_ERR_NONE);
-    }
+    } */
 
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
@@ -323,7 +360,7 @@ static void appTaskTouchDetection(void *p_arg) {
         }
 
         // Delay to avoid overloading the system
-        OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+        OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
         assert(os_err == OS_ERR_NONE);
     }
 }
@@ -346,34 +383,11 @@ void appTaskTSI(void *p_arg){
         }else{
             tsiLevels.tsiFlag = 0;
     }
-    OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+    OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
     assert(os_err == OS_ERR_NONE);
     }
 }
-/*
-void appEnterCheck(void *p_arg) {
-    char input;
-    OS_ERR os_err;
-    (void)p_arg;
 
-    while (1) {
-        input = BIORead();  // Use non-blocking read
-
-        if (input == '\r') {  // Check if Enter key (carriage return) was pressed
-            BIOOutCRLF();
-            INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
-            INT8U Num_lngth = 10;
-
-
-        } else if (input != '\0') {  // Avoid breaking if no input
-            // Perform other actions here
-        }
-
-        OSTimeDly(21, OS_OPT_TIME_PERIODIC, &os_err);  // Yield control to other tasks periodically
-        assert(os_err == OS_ERR_NONE);  // Check for errors during delay
-    }
-}
-*/
 void appEnterCheck(void *p_arg) {
     INT8C input;
     OS_ERR os_err;
@@ -401,7 +415,7 @@ void appEnterCheck(void *p_arg) {
                 switch(current_state.wave_form){
                 case sine:
                     current_state.sine_frequency = (INT32U)number;
-  //SINE FIX UP                  ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+  //SINE FIX UP
                     break;
                 case pulse:
                     current_state.pulse_frequency = (INT32U)number;
@@ -409,13 +423,14 @@ void appEnterCheck(void *p_arg) {
                     break;
                 default:
  //SINE FIX UP                   ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+                    break;
                 }
             }
 
         } else if (input != '\0') {  // Avoid breaking if no input
             // Perform other actions if necessary
         }
-        OSTimeDly(21, OS_OPT_TIME_DLY, &os_err);  // Use OS_OPT_TIME_DLY instead
+        OSTimeDly(100, OS_OPT_TIME_DLY, &os_err);  // Use OS_OPT_TIME_DLY instead
         assert(os_err == OS_ERR_NONE);
         }
     }

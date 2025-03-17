@@ -9,6 +9,7 @@
 #include "sineTable.h"
 #include "state.h"
 #include "rotary.h"
+#include "CTimer.h"
 
 /******************************************************************************************
 * Private Global Variables
@@ -23,27 +24,6 @@
 ******************************************************************************************/
 void qeCntOutTask(void) {
     DB3_TURN_ON();
-    /* get difference count and add */
-    /*
-    qeXCnt = qeXCnt + (INT16S)(ENC0->POSD);
-     //control max and min values
-    if (current_state.wave_form == pulse) {
-        // If pulse mode, increase CNT_MAX to 100 for finer control
-        if(qeXCnt > 100 * EDGE_DIV) {
-            qeXCnt = 100 * EDGE_DIV;
-        } else if(qeXCnt < CNT_MIN) {
-            qeXCnt = CNT_MIN;
-        }
-    } else {
-        // Use original CNT_MAX for other modes
-        if(qeXCnt > CNT_MAX * EDGE_DIV) {
-            qeXCnt = CNT_MAX * EDGE_DIV;
-        } else if(qeXCnt < CNT_MIN) {
-            qeXCnt = CNT_MIN;
-        }
-    }
-    */
-    /* Output final count */
     switch(current_state.wave_form){
     case sine:
         SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
@@ -110,6 +90,7 @@ void updatePulseTrain(void) {
     // Update duty cycle based on current count (qeCnt)                                                                          ++++++++++++++++++++++++++++++++
 
     current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt ;  // Scale to match 0-100% duty cycle
+    ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
     // Remove in  final program
 //    BIOPutStrg("\r\nPulse Duty Cycle: ");
 //    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)

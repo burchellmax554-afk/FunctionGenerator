@@ -32,7 +32,6 @@
  ******************************************************************************/
 INT32U periodValue; // Period value (default is 150000)
 INT32U dutyValue; // Duty cycle (default is 50)
-//INT32U freq;
 /***********************************************************************************
  * Configure CTIMER0 to generate a 1kHz square wave on P0_11 using pll0_clk (150MHz)
  * Sam Johnson
@@ -44,7 +43,7 @@ void ctInit(void){
    /* Select pll0_clk as CTIMER0's clock */
    SYSCON0->CTIMERCLKSEL[0] = SYSCON_CTIMERCLKSEL_SEL(1);
    /* Setup CTIMER0's clock divider and wait for it to stabilize */
-   SYSCON0->CTIMERCLKDIV[0] = 4; // Divide by 2, for example
+   SYSCON0->CTIMERCLKDIV[0] = 4; // Divide by 4 (4+1)
    while (SYSCON0->CTIMERCLKDIV[0] & SYSCON_CTIMERXCLKDIV_CTIMERCLKDIV_UNSTAB(1)){}
    /* Enable clock gate for PORT0 */
    SYSCON0->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_PORT0(1);
