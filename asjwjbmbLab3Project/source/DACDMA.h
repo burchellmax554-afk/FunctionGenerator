@@ -8,13 +8,12 @@
 #ifndef DACDMA_H_
 #define DACDMA_H_
 
-#define WAVE_SAMPLES_PER_BLOCK 64
-#define WAVE_BYTES_PER_SAMPLE 2 //bytes in each sample from data source
-#define WAVE_BYTES_PER_BUFFER   (WAVE_SAMPLES_PER_BLOCK*WAVE_BYTES_PER_SAMPLE)
+#define BLOCKS 2
+#define WAVE_SAMPLES_PER_BLOCK 128
+#define WAVE_BYTES_PER_SAMPLE 2
+#define WAVE_BYTES_PER_BUFFER    (WAVE_SAMPLES_PER_BLOCK*WAVE_BYTES_PER_SAMPLE)
 #define WAVE_DMA_CH 0
 #define SIZE_CODE_16BIT 1
-#define BLOCKS 2
-
 
 /*****************************************************************************************
 * Task Function Prototypes.

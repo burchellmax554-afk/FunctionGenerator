@@ -27,30 +27,26 @@ static OS_TCB generateSineTableTaskTCB;
 * Allocate task stack space.
 *************************************************************************/
 static CPU_STK generateSineTableTaskStk[APP_CFG_GENERATE_SINE_TABLE_TASK_STK_SIZE];
-
 /****************************************************************************
  *  Define DMA and waveform buffer settings
  ******************************************************************************/
-#define BLOCKS 2
-#define WAVE_SAMPLES_PER_BLOCK 64
-#define WAVE_BYTES_PER_SAMPLE 2
-#define WAVE_BYTES_PER_BUFFER    (WAVE_SAMPLES_PER_BLOCK*WAVE_BYTES_PER_SAMPLE)
-#define WAVE_DMA_CH 0
-#define SIZE_CODE_16BIT 1
+
+
+typedef struct{
+    INT8U count; /* Buffer count (alternates from 0 to 1 for ping-pong) */
+    OS_SEM flag; /* Semaphore to synchronize access*/
+} type_indexedBuffer;
+
+extern type_indexedBuffer indexedBuffer;
 
 /******************************************************************************
  *  Ping-Pong Buffer structure
  ******************************************************************************/
-typedef struct{
-    INT8U count; /* Buffer count (alternates from 0 to 1 for ping-pong) */
-    OS_SEM flag; /* Semaphore to synchronize access*/
-} WG_PING_PONG_BUFFER_T;
 
 /******************************************************************************
  *  Global Ping-Pong Buffer instance
  ******************************************************************************/
-static WG_PING_PONG_BUFFER_T pingPong;
-static INT16U pingPongBuffer[BLOCKS][WAVE_SAMPLES_PER_BLOCK / 2];
+static INT16U DMABuffer[BLOCKS][WAVE_SAMPLES_PER_BLOCK / 2];
 
 /*******************************************************************************
  *  Function Prototypes
@@ -58,7 +54,7 @@ static INT16U pingPongBuffer[BLOCKS][WAVE_SAMPLES_PER_BLOCK / 2];
 static void generateSineTableTask(void *p_arg);
 static void dacInit(void);
 static void wgDMAInit(INT16U *out_block);
-
+type_indexedBuffer indexedBuffer;
 /****************************************************************************************
 * Function: WaveGenPend
 * Purpose: When called, wait for a signal from the Ping-Pong buffer semaphore.
@@ -70,9 +66,9 @@ static void wgDMAInit(INT16U *out_block);
 * Reese Bergeson, 03/15/2025
 ****************************************************************************************/
 INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
-    OSSemPend(&(pingPong.flag), tout, OS_OPT_PEND_BLOCKING, (CPU_TS *)0, os_err_ptr);
+    OSSemPend(&(indexedBuffer.flag), tout, OS_OPT_PEND_BLOCKING, (CPU_TS *)0, os_err_ptr);
     assert(*os_err_ptr == OS_ERR_NONE);
-    return(pingPong.count); /* Return current buffer index */
+    return(indexedBuffer.count); /* Return current buffer index */
 }
 
 /****************************************************************************************
@@ -84,12 +80,12 @@ INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
 ****************************************************************************************/
 void WaveGenInit(void){
     OS_ERR os_err;
-    OSSemCreate(&(pingPong.flag), "Ping Pong Buffer Semaphore", 0, &os_err);
+    OSSemCreate(&(indexedBuffer.flag), "Ping Pong Buffer Semaphore", 0, &os_err);
     assert(os_err == OS_ERR_NONE);
 
     dacInit();
     /* Initialize DMA with pointer to 2 dimensional ping-pong buffer array */
-    wgDMAInit(&pingPongBuffer[0][0]);
+    wgDMAInit(&DMABuffer[0][0]);
 
     OSTaskCreate(&generateSineTableTaskTCB,
                 "Generate Sine Table Task",
@@ -206,13 +202,13 @@ void EDMA_0_CH0_IRQHandler(void) {
     DMA0->CH[0].CH_INT = DMA_CH_INT_INT(1); /* Clear DMA interrupt flag */
     /* Check the DONE flag in the DMA channel Status Register */
     if (DMA0->CH[WAVE_DMA_CH].CH_CSR & DMA_CH_CSR_DONE_MASK) {
-        pingPong.count = 1; /* Switch to the secondary buffer (ping) */
+        indexedBuffer.count = 1; /* Switch to the secondary buffer (ping) */
     }
     else {
-        pingPong.count = 0; /* Switch to the primary buffer (pong) */
+        indexedBuffer.count = 0; /* Switch to the primary buffer (pong) */
     }
     /* Post to the semaphore to signal that the buffer is ready */
-    OSSemPost(&pingPong.flag, OS_OPT_POST_1, &os_err);
+    OSSemPost(&indexedBuffer.flag, OS_OPT_POST_1, &os_err);
     assert(os_err == OS_ERR_NONE);
     DB3_TURN_OFF();
     OSIntExit();
@@ -251,8 +247,9 @@ static void generateSineTableTask(void *p_arg) {
     (void)p_arg; /* Suppress unused parameter warning */
 
     while (1) {
+        if(current_state.wave_form == sine){
         index = WaveGenPend(0, &os_err);
-        assert(os_err == OS_ERR_NONE);
+
         mutex_counter = mutex_counter + 1;
         /* Get updated settings */
         if (mutex_counter == 100) {
@@ -264,7 +261,6 @@ static void generateSineTableTask(void *p_arg) {
             /* Do nothing */
         }
 
-
         scale = localAmp * 372;
 
         /* Loop through half the buffer to populate sine wave values in that half*/
@@ -272,9 +268,10 @@ static void generateSineTableTask(void *p_arg) {
             /* Increment phase accumulator based on frequency*/
             Xarg = Xarg + phaseStep * localFreq;
             /* Calculate the sine wave sample value */
-            pingPongBuffer[index][i] = (INT16U) (((scale * ((arm_sin_q31(Xarg)) >> 13)) >> 18) + 8191);
+            DMABuffer[index][i] = (INT16U) (((scale * ((arm_sin_q31(Xarg)) >> 13)) >> 18) + 8191);
         }
         //OSTimeDly(1,OS_OPT_TIME_DLY,&os_err);
     }
 
+}
 }
