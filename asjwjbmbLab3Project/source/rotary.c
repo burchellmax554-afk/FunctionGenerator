@@ -11,38 +11,13 @@
 #include "rotary.h"
 
 /******************************************************************************************
-* Private Global Variables
-******************************************************************************************/
-//INT16S qeXCnt = (CNT_MAX*EDGE_DIV)/2;
-
-
-/******************************************************************************************
 * qeCntOutTask - Timeslice task that uses the position difference register to add or
 *                subtract counts. Uses EDGE_DIV to make it more or less sensitive.
 *                Output is 0-20. Samples every SLICE_PER.
+*               Credit: Max Burchell
 ******************************************************************************************/
 void qeCntOutTask(void) {
     DB3_TURN_ON();
-    /* get difference count and add */
-    /*
-    qeXCnt = qeXCnt + (INT16S)(ENC0->POSD);
-     //control max and min values
-    if (current_state.wave_form == pulse) {
-        // If pulse mode, increase CNT_MAX to 100 for finer control
-        if(qeXCnt > 100 * EDGE_DIV) {
-            qeXCnt = 100 * EDGE_DIV;
-        } else if(qeXCnt < CNT_MIN) {
-            qeXCnt = CNT_MIN;
-        }
-    } else {
-        // Use original CNT_MAX for other modes
-        if(qeXCnt > CNT_MAX * EDGE_DIV) {
-            qeXCnt = CNT_MAX * EDGE_DIV;
-        } else if(qeXCnt < CNT_MIN) {
-            qeXCnt = CNT_MIN;
-        }
-    }
-    */
     /* Output final count */
     switch(current_state.wave_form){
     case sine:
@@ -77,6 +52,7 @@ void qeCntOutTask(void) {
 *               For input on J3_1 (PHA) and J3_3 (PHB) on FRDM-N947 board.
 *               Note the old acronym was ENC and the new acronym is QDC. The RM uses both.
 *               Code below uses the old acronym.
+*               Credit: Max Burchell
 ******************************************************************************************/
 void qeQDCInit(void) {
     /* Enable clock for QDC0, PORT1, and PORT2 */
@@ -98,6 +74,7 @@ void qeQDCInit(void) {
 }
 /******************************************************************************************
 * updateSine() - Update the amplitude of the sine wave based on rotary control.
+* Credit: Max Burchell
 ******************************************************************************************/
 void updateSine(void) {
     // Update amplitude based on current count (qeCnt)
@@ -105,12 +82,8 @@ void updateSine(void) {
 }
 /******************************************************************************************
 * updatePulseTrain() - Update the duty cycle of the pulse-train based on rotary control.
+* Credit: Max Burchell
 ******************************************************************************************/
 void updatePulseTrain(void) {
-    // Update duty cycle based on current count (qeCnt)                                                                          ++++++++++++++++++++++++++++++++
-
-    current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt ;  // Scale to match 0-100% duty cycle
-    // Remove in  final program
-//    BIOPutStrg("\r\nPulse Duty Cycle: ");
-//    BIOOutDecWord((INT32U)current_state.pulse_duty_cycle, 3, BIO_OD_MODE_AL);)
+    // Update duty cycle based on current count (qeCnt)                                                                         
 }

@@ -2,7 +2,7 @@
  * DACDMA.h
  *
  *  Created on: Mar 7, 2025
- *      Author: walke58
+ *      Credit: Aidan Walker
  */
 #ifndef DACDMA_H_
 #define DACDMA_H_

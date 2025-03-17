@@ -24,6 +24,7 @@ type_indexBuffer indexBuffer; //'type_indexBuffer' struct has 2 members: '.flag'
 /*******************************************************************************************
  *  DACinit():
  *      Initialize DAC2 to receive 14 bits from DMA0 and construct sinusoidal signal
+        Credit: Aidan Walker
  ******************************************************************************************/
 void DACinit(void){
     SYSCON0->AHBCLKCTRLSET[3] = SYSCON_AHBCLKCTRL3_DAC2(1); /* Enable clock for DAC2   */
@@ -47,6 +48,7 @@ void DACinit(void){
  *      Configure CTIMER2 to periodically trigger DMA to
  *      transfer data from DMABuffer to DAC2. Enable INTFULL interrupt for ping-pong switching
  *      between DMABuffer[0] and DMABuffer[1]
+ *      Credit: Aidan Walker
  ******************************************************************************************/
 void DMAinit(void){
 
@@ -119,6 +121,7 @@ void DMAinit(void){
  *      Interrupt handler signaled by flag occurring when one block of the ping-pong is full.
  *      Posts semaphore that the signal processing task pends on, which shall receive the index
  *      (either 0 or 1) signaling the task to begin writing to the [index] block of the ping pong.
+ *      Credit: Aidan Walker
  ******************************************************************************************/
 void EDMA_0_CH0_IRQHandler(void){
 
@@ -137,6 +140,7 @@ void EDMA_0_CH0_IRQHandler(void){
  *      indexBufferPend() will move the pending task to the wait state until the indexBuffer semaphore
  *      is posted by the IRQ handle. When the indexBuffer semaphore is signaled, indexBufferPend() will
  *      return the index of the block the task needs to write to next.
+ *      Credit: Aidan Walker
  ******************************************************************************************/
 INT16U indexBufferPend(OS_TICK tout, OS_ERR *os_err){
 

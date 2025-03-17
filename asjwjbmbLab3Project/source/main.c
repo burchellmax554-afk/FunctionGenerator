@@ -1,3 +1,6 @@
+/****************************************************************************************
+* Credit: Max Burchell + Jake Sheckler
+****************************************************************************************/
 #include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
@@ -50,6 +53,7 @@ Defined Variables
 
 /****************************************************************************************
 * main()
+* Credit: Max Burchell
 ****************************************************************************************/
 void main(void) {
 
@@ -85,6 +89,7 @@ void main(void) {
 
 /****************************************************************************************
 * STARTUP TASK
+* Credit: Everyone
 ****************************************************************************************/
 static void appStartTask(void *p_arg) {
 
@@ -199,12 +204,12 @@ static void appStartTask(void *p_arg) {
 
 /****************************************************************************************
 * Task for managing the rotary encoder
+* Credit: Max Burchell
 ****************************************************************************************/
 static void appTaskRotary(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     qeQDCInit();
-    //current_state = (SystemState) {sine, 1000, 10, 1000, 50};  // Initialize system with sine wave by default
     while (1) {
         // Task content for rotary encoder will be added here later.
         OSTimeDly(SLICE_PER, OS_OPT_TIME_PERIODIC, &os_err);  // Periodic delay
@@ -219,6 +224,9 @@ static void appTaskRotary(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Max Burchell
+****************************************************************************************/
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
@@ -234,7 +242,6 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
                 break;
             case pulse:
-               // ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                 break;
             default:
                 BIOPutStrg("\rInvalid Mode! ");
@@ -297,6 +304,9 @@ static void appTaskFunctionDisplay(void *p_arg) {
     assert(os_err == OS_ERR_NONE);
     }
 
+/****************************************************************************************
+* Credit: Max Burchell
+****************************************************************************************/
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
     SW_T sw_in = 0; /* Initialize switch to 0 */
@@ -312,6 +322,9 @@ static void appTaskStateManagement(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Jake Sheckler
+****************************************************************************************/
 static void appTaskTouchDetection(void *p_arg) {
     OS_ERR os_err;
     (void)p_arg;  // Avoid unused parameter warning
@@ -328,6 +341,9 @@ static void appTaskTouchDetection(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Jake Sheckler
+****************************************************************************************/
 void appTaskTSI(void *p_arg){
     OS_ERR os_err;
     (void)p_arg;
@@ -350,30 +366,10 @@ void appTaskTSI(void *p_arg){
     assert(os_err == OS_ERR_NONE);
     }
 }
-/*
-void appEnterCheck(void *p_arg) {
-    char input;
-    OS_ERR os_err;
-    (void)p_arg;
 
-    while (1) {
-        input = BIORead();  // Use non-blocking read
-
-        if (input == '\r') {  // Check if Enter key (carriage return) was pressed
-            BIOOutCRLF();
-            INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
-            INT8U Num_lngth = 10;
-
-
-        } else if (input != '\0') {  // Avoid breaking if no input
-            // Perform other actions here
-        }
-
-        OSTimeDly(21, OS_OPT_TIME_PERIODIC, &os_err);  // Yield control to other tasks periodically
-        assert(os_err == OS_ERR_NONE);  // Check for errors during delay
-    }
-}
-*/
+/****************************************************************************************
+* Credit: Jake Sheckler
+****************************************************************************************/
 void appEnterCheck(void *p_arg) {
     INT8C input;
     OS_ERR os_err;
@@ -401,14 +397,13 @@ void appEnterCheck(void *p_arg) {
                 switch(current_state.wave_form){
                 case sine:
                     current_state.sine_frequency = (INT32U)number;
-  //SINE FIX UP                  ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
                     break;
                 case pulse:
                     current_state.pulse_frequency = (INT32U)number;
                     ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                     break;
                 default:
- //SINE FIX UP                   ctUpdateFrequency(current_state.sine_frequency, current_state.pulse_duty_cycle);
+
                 }
             }
 
