@@ -2,7 +2,7 @@
  * DACDMA.h
  *
  *  Created on: Mar 7, 2025
- *      Credit: Aidan Walker
+ *      Credit: Aidan Walker and Jake Sheckler
  */
 
 #ifndef DACDMA_H_
@@ -24,7 +24,7 @@ void DMAinit(INT16U* sourceBlock);
 void DACinit(void);
 INT16U indexBufferPend(OS_TICK tout, OS_ERR *os_err);
 void EDMA_0_CH0_IRQHandler(void);
-void WaveGenInit(void);
+void WaveInit(void);
 
 
 

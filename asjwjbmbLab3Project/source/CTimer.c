@@ -29,7 +29,7 @@ INT32U dutyValue; // Duty cycle (default is 50)
  * Configure CTIMER0 to generate a 1kHz square wave on P0_11 using pll0_clk (150MHz)
  * Sam Johnson
  * Todd Morton
- * Jake Sheckler
+ * Jake Sheckler Divide by 4 (4+1) line 40
  **********************************************************************************/
 void ctInit(void){
     /* Enable clock gate for CTIMER0 */

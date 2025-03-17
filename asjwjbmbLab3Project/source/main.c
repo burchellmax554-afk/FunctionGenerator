@@ -1,7 +1,6 @@
 /****************************************************************************************
 * Credit: Max Burchell + Jake Sheckler
 ****************************************************************************************/
-#include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
 #include "FRDM_MCXN947ClkCfg.h"
@@ -10,13 +9,11 @@
 #include "BasicIO.h"
 #include "app_cfg.h"
 #include "TSI.h"
-#include "sineTable.h"
 #include "state.h"
 #include "state_management.h"
 #include "rotary.h"
 #include "CTimer.h"
 #include "DACDMA.h"
-
 /****************************************************************************************
 * Allocate task control blocks
 ****************************************************************************************/
@@ -50,7 +47,7 @@ Defined Variables
 
 /****************************************************************************************
 * main()
-* Credit: Max Burchell
+* Credit: Todd
 ****************************************************************************************/
 void main(void) {
 
@@ -99,7 +96,7 @@ static void appStartTask(void *p_arg) {
     SwInit();
     TSIInit();
     ctInit();
-    WaveGenInit();
+    WaveInit();
 
     OSTaskCreate(&appTaskFunctionDisplayTCB,                  /* Create Task 1                    */
                 "App Task TimerDisplay ",
@@ -202,6 +199,10 @@ static void appTaskRotary(void *p_arg) {
         }
     }
 }
+/****************************************************************************************
+* Task for managing the function display
+* Credit: Max Burchell for the base, Jake Sheckler for the revised.
+****************************************************************************************/
 static void appTaskFunctionDisplay(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
@@ -254,7 +255,7 @@ static void appTaskFunctionDisplay(void *p_arg) {
 
         }
         // Delay before the next update
-        OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);  // Delay for 500ms
+        OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);  // Delay for 250ms
         assert(os_err == OS_ERR_NONE);
     }
 }
@@ -295,13 +296,13 @@ static void appTaskTouchDetection(void *p_arg) {
                 TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
                 /* Process channel */
                 if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
-                    TSISwap();
+                    TSISwap(); //Swap the tsi
                 }else{
                     tsiLevels.tsiFlag = 0;
             }
 
         // Delay to avoid overloading the system
-        OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
+        OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
         assert(os_err == OS_ERR_NONE);
     }
 }
@@ -320,6 +321,12 @@ void appEnterCheck(void *p_arg) {
 
         if (input == '\r') {  // Check if Enter key (carriage return) was pressed
             BIOOutCRLF();
+            if(current_state.wave_form == sine){
+                BIOPutStrg("sine f: ");
+            }
+            if(current_state.wave_form == pulse){
+                BIOPutStrg("pulse f: ");
+            }
             INT8C input_strg[11];  // Array to hold the input string (assuming max length of 10)
             INT8U Num_lngth = 10;
             if (BIOGetStrg(Num_lngth, input_strg) == 0) {  // 0 means input ended with Enter key
@@ -332,27 +339,21 @@ void appEnterCheck(void *p_arg) {
                 }
 
                 // Update the pulse frequency
-                switch(current_state.wave_form){
-                case sine:
-                    BIOPutStrg("sine f: ");
+                if(current_state.wave_form == sine){
+                    //update sine frequency and display sine
                     current_state.sine_frequency = (INT32U)number;
-                    break;
-                case pulse:
-                    BIOPutStrg("pulse f: ");
+                }
+                if(current_state.wave_form == pulse){ //update pulse frequency and display pulse
                     current_state.pulse_frequency = (INT32U)number;
                     ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                     BIOOutCRLF();
-                    break;
-                default:
-                    ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
-                    break;
                 }
             }
 
         } else if (input != '\0') {  // Avoid breaking if no input
-            // Perform other actions if necessary
+            //Empty else statement for error handling
         }
-        OSTimeDly(100, OS_OPT_TIME_DLY, &os_err);  // Use OS_OPT_TIME_DLY instead
+        OSTimeDly(100, OS_OPT_TIME_DLY, &os_err); //100ms Time delay
         assert(os_err == OS_ERR_NONE);
         }
     }

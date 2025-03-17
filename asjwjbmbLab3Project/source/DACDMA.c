@@ -7,6 +7,7 @@
 * Bernhardt Krause, 03/15/2025
 * Reese Bergeson, 03/15/2025
 * Jake Sleppy, 03/16/2025
+* Jake Sheckler 3/16/2025
  ****************************************************************************************/
 #include "MCUType.h"
 #include "FRDM_MCXN947_GPIO.h"
@@ -18,7 +19,6 @@
 #include "BasicIO.h"
 #include "state.h"
 #include "DACDMA.h"
-//#include "WaveGenDMA.h"
 /**********************************************************************************
 * Allocate task control blocks
 **********************************************************************************/
@@ -32,16 +32,15 @@ static CPU_STK generateSineTableTaskStk[APP_CFG_GENERATE_SINE_TABLE_TASK_STK_SIZ
  ******************************************************************************/
 
 
+/******************************************************************************
+ *  Ping-Pong Buffer structure
+ ******************************************************************************/
 typedef struct{
     INT8U count; /* Buffer count (alternates from 0 to 1 for ping-pong) */
     OS_SEM flag; /* Semaphore to synchronize access*/
 } type_indexedBuffer;
 
 extern type_indexedBuffer indexedBuffer;
-
-/******************************************************************************
- *  Ping-Pong Buffer structure
- ******************************************************************************/
 
 /******************************************************************************
  *  Global Ping-Pong Buffer instance
@@ -64,6 +63,7 @@ type_indexedBuffer indexedBuffer;
 *   - os_err_ptr: Pointer to the operating system error status variable.
 * Returns: Current Ping-Pong buffer index.
 * Reese Bergeson, 03/15/2025
+* Jake Sheckler 3/16/2025
 ****************************************************************************************/
 INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
     OSSemPend(&(indexedBuffer.flag), tout, OS_OPT_PEND_BLOCKING, (CPU_TS *)0, os_err_ptr);
@@ -72,13 +72,13 @@ INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
 }
 
 /****************************************************************************************
-* Function: WaveGenInit
+* Function: WaveInit
 * Purpose: Initialize sine table generation task, dac,dma, semaphore for
 * Ping-Pong buffer, and peripherals.
 * Todd Morton, 02/11/2025
 * Reese Bergeson, 03/15/2025
 ****************************************************************************************/
-void WaveGenInit(void){
+void WaveInit(void){
     OS_ERR os_err;
     OSSemCreate(&(indexedBuffer.flag), "Ping Pong Buffer Semaphore", 0, &os_err);
     assert(os_err == OS_ERR_NONE);
@@ -231,6 +231,7 @@ void EDMA_0_CH0_IRQHandler(void) {
  * Reese Bergeson: Implementation of all math used to generate ping pong buffer indices.
  * Jake Sleppy: Implementation of mutex_counter if statement which minimizes cpu load by preventing continuous updates to
  *              'localFreq' and 'localAmp'.
+ * Jake Sheckler: Removal of semaphores and Mutex.
  *****************************************************************************/
 
 static void generateSineTableTask(void *p_arg) {
@@ -247,13 +248,11 @@ static void generateSineTableTask(void *p_arg) {
     (void)p_arg; /* Suppress unused parameter warning */
 
     while (1) {
-       // CTIMER0->TCR = CTIMER_TCR_CEN(0);
         index = WaveGenPend(0, &os_err);
 
         mutex_counter = mutex_counter + 1;
         /* Get updated settings */
         if (mutex_counter == 100) {
-
             localFreq = (INT16U)current_state.sine_frequency;  /* Frequency in Hz */
             localAmp = (INT16U)current_state.sine_amplitude;    /* Quadrature encoder output (0-20)*/
             mutex_counter = 0;
@@ -270,7 +269,7 @@ static void generateSineTableTask(void *p_arg) {
             /* Calculate the sine wave sample value */
             DMABuffer[index][i] = (INT16U) (((scale * ((arm_sin_q31(Xarg)) >> 13)) >> 18) + 8191);
         }
-        //OSTimeDly(1,OS_OPT_TIME_DLY,&os_err);
+
 }
-   // CTIMER0->TCR = CTIMER_TCR_CEN(1);
+
 }

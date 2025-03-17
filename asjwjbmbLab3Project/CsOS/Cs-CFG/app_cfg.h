@@ -24,6 +24,7 @@
 * Filename      : app_cfg.h
 * Version       : V1.00
 * Programmer(s) : DC
+* Jake Sheckler: Priority management
 *********************************************************************************************************
 */
 
@@ -54,19 +55,7 @@
 #define APP_CFG_TASK_TOUCH_DETECTION_PRIO  14u  // Touch detection task priority, same as TSI (user interaction).
 #define APP_CFG_TASK_ENTER_CHECK_PRIO      16u  // Enter key check task priority, relatively high priority for user input.
 #define APP_CFG_GENERATE_SINE_TABLE_TASK_PRIO 8u // Sine wave generation task priority, relatively low (background).
-/*
-#define APP_CFG_TASK_START_PRIO            6u
 
-#define APP_CFG_SW_TASK_PRIO		       7u
-#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 10u //Define variable names to better match lab 2 over lab 1
-#define APP_CFG_TASK_STATE_MANAGEMENT_PRIO 7u
-#define APP_CFG_TASK_TSI_PRIO              8u
-#define APP_CFG_TASK_ROTARY_PRIO           5u
-#define APP_CFG_TASK_TOUCH_DETECTION_PRIO  8u
-#define APP_CFG_TASK_ENTER_CHECK_PRIO      9u
-//Shot
-#define APP_CFG_GENERATE_SINE_TABLE_TASK_PRIO 10u
-*/
 /*
 *********************************************************************************************************
 *                                            TASK STACK SIZES

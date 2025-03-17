@@ -1,4 +1,3 @@
-#include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
 #include "FRDM_MCXN947ClkCfg.h"
@@ -6,10 +5,12 @@
 #include "CsOS_SW.h"
 #include "BasicIO.h"
 #include "TSI.h"
-#include "sineTable.h"
 #include "state.h"
 #include "rotary.h"
 
+/******************************************************************************************
+*Credits: Max Burchell and Jake Sheckler with base code from Todd.
+******************************************************************************************/
 /******************************************************************************************
 * qeCntOutTask - Timeslice task that uses the position difference register to add or
 *                subtract counts. Uses EDGE_DIV to make it more or less sensitive.

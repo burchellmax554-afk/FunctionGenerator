@@ -7,7 +7,6 @@
 /*
  *
  */
-#include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
 #include "FRDM_MCXN947ClkCfg.h"
