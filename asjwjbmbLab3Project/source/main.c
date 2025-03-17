@@ -152,27 +152,13 @@ static void appStartTask(void *p_arg) {
     assert(os_err == OS_ERR_NONE);
 
     OSTaskCreate(&appTaskTouchDetectionTCB,
-                     "Touch Detection Task",
-                     appTaskTouchDetection,
-                     (void *)0,
-                     APP_CFG_TASK_TOUCH_DETECTION_PRIO,
-                     &appTaskTouchDetectionStk[0],
-                     (APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE / 10u),
-                     APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE,
-                     0,
-                     0,
-                     (void *)0,
-                     (OS_OPT_TASK_NONE),
-                     &os_err);
-        assert(os_err == OS_ERR_NONE);
-    OSTaskCreate(&appTaskTSITCB,
-                   "TSI Task",
-                   appTaskTSI,
+                   "App Task Touch Detection",
+                   appTaskTouchDetection,
                    (void *)0,
-                    APP_CFG_TASK_TSI_PRIO,
-                    &appTaskTSIStk[0],
-                    (APP_CFG_TASK_TSI_STK_SIZE / 10u),
-                    APP_CFG_TASK_TSI_STK_SIZE,
+                   APP_CFG_TASK_TOUCH_DETECTION_PRIO,
+                    &appTaskTouchDetectionStk[0],
+                    (APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE / 10u),
+                    APP_CFG_TASK_TOUCH_DETECTION_STK_SIZE,
                     0,
                     0,
                     (void *)0,
@@ -303,10 +289,20 @@ static void appTaskTouchDetection(void *p_arg) {
     (void)p_arg;  // Avoid unused parameter warning
 
     while (1) {
-        if (TSITouchGet() ==  1) {
-            TSISwap();  // Swap the waveform if touch is detected
+        DB0_TURN_ON(); /* debug bit measures sensor scan time */
+                /*start a scan sequence */
+                TSI0->GENCS |= TSI_GENCS_SWTS(1);
+                /* wait for scan to finish */
+                while((TSI0->DATA & TSI_DATA_EOSF_MASK) == 0){}
+                DB0_TURN_OFF();
 
-        }
+                TSI0->DATA |= TSI_DATA_EOSF(1);    //Clear flag
+                /* Process channel */
+                if((INT16U)(TSI0->DATA & TSI_DATA_TSICNT_MASK) < tsiLevels.threshold){
+                    TSISwap();
+                }else{
+                    tsiLevels.tsiFlag = 0;
+            }
 
         // Delay to avoid overloading the system
         OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
@@ -317,10 +313,13 @@ static void appTaskTouchDetection(void *p_arg) {
 /****************************************************************************************
 * Credit: Jake Sheckler
 ****************************************************************************************/
-void appTaskTSI(void *p_arg){
+static void appTaskTSI(void *p_arg){
     OS_ERR os_err;
     (void)p_arg;
     while(1){
+        if (TSITouchGet() ==  1) {
+            TSISwap();  // Swap the waveform if touch is detected
+
         DB0_TURN_ON(); /* debug bit measures sensor scan time */
         /*start a scan sequence */
         TSI0->GENCS |= TSI_GENCS_SWTS(1);
@@ -335,11 +334,12 @@ void appTaskTSI(void *p_arg){
         }else{
             tsiLevels.tsiFlag = 0;
     }
+
+}
     OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
-    assert(os_err == OS_ERR_NONE);
+        assert(os_err == OS_ERR_NONE);
     }
 }
-
 void appEnterCheck(void *p_arg) {
     INT8C input;
     OS_ERR os_err;

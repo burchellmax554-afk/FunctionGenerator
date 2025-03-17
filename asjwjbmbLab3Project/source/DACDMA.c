@@ -247,7 +247,7 @@ static void generateSineTableTask(void *p_arg) {
     (void)p_arg; /* Suppress unused parameter warning */
 
     while (1) {
-        if(current_state.wave_form == sine){
+       // CTIMER0->TCR = CTIMER_TCR_CEN(0);
         index = WaveGenPend(0, &os_err);
 
         mutex_counter = mutex_counter + 1;
@@ -271,7 +271,6 @@ static void generateSineTableTask(void *p_arg) {
             DMABuffer[index][i] = (INT16U) (((scale * ((arm_sin_q31(Xarg)) >> 13)) >> 18) + 8191);
         }
         //OSTimeDly(1,OS_OPT_TIME_DLY,&os_err);
-    }
-
 }
+   // CTIMER0->TCR = CTIMER_TCR_CEN(1);
 }

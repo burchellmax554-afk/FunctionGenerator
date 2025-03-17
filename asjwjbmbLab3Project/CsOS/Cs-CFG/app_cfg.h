@@ -47,14 +47,13 @@
 */
 
 #define APP_CFG_TASK_START_PRIO            6u  // Priority for the starting task, typically lower for initialization.
-#define APP_CFG_SW_TASK_PRIO               7u  // Software management task priority, moderate importance.
-#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 8u // Display update task, lowest priority (non-critical).
-#define APP_CFG_TASK_STATE_MANAGEMENT_PRIO 7u  // State management task priority, moderate importance (matches SW task).
-#define APP_CFG_TASK_TSI_PRIO              8u  // TSI (touch sensing) task priority, higher priority for responsiveness.
-#define APP_CFG_TASK_ROTARY_PRIO           5u  // Rotary encoder task priority, lower priority.
-#define APP_CFG_TASK_TOUCH_DETECTION_PRIO  8u  // Touch detection task priority, same as TSI (user interaction).
-#define APP_CFG_TASK_ENTER_CHECK_PRIO      9u  // Enter key check task priority, relatively high priority for user input.
-#define APP_CFG_GENERATE_SINE_TABLE_TASK_PRIO 10u // Sine wave generation task priority, relatively low (background).
+#define APP_CFG_SW_TASK_PRIO               18u  // Software management task priority, moderate importance.
+#define APP_CFG_TASK_FUNCTION_DISPLAY_PRIO 12u // Display update task, lowest priority (non-critical).
+#define APP_CFG_TASK_STATE_MANAGEMENT_PRIO 20u  // State management task priority, moderate importance (matches SW task).
+#define APP_CFG_TASK_ROTARY_PRIO           10u  // Rotary encoder task priority, lower priority.
+#define APP_CFG_TASK_TOUCH_DETECTION_PRIO  14u  // Touch detection task priority, same as TSI (user interaction).
+#define APP_CFG_TASK_ENTER_CHECK_PRIO      16u  // Enter key check task priority, relatively high priority for user input.
+#define APP_CFG_GENERATE_SINE_TABLE_TASK_PRIO 8u // Sine wave generation task priority, relatively low (background).
 /*
 #define APP_CFG_TASK_START_PRIO            6u
 
