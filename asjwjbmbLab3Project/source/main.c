@@ -210,19 +210,18 @@ static void appTaskFunctionDisplay(void *p_arg) {
             current_state.sine_amplitude != previous_state.sine_amplitude ||
             current_state.pulse_frequency != previous_state.pulse_frequency ||
             current_state.pulse_duty_cycle != previous_state.pulse_duty_cycle) {
-        }
+            BIOPutStrg("\033[2J\033[H");
         switch (current_state.wave_form) {
             case sine:
 
                 break;
             case pulse:
                // ctUpdateFrequency(current_state.pulse_frequency, current_state.pulse_duty_cycle);
-                ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
                 break;
             default:
                 BIOPutStrg("\rInvalid Mode! ");
             }
-
+            ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
             switch (current_state.wave_form) {
                 case sine:
                     BIOPutStrg("\r[sine], ");
@@ -270,13 +269,14 @@ static void appTaskFunctionDisplay(void *p_arg) {
             //previous_state = current_state;
             previous_state.wave_form = current_state.wave_form;
             previous_state.sine_frequency = current_state.sine_frequency;
-            previous_state.pulse_frequency = previous_state.pulse_frequency;
-            previous_state.pulse_duty_cycle = previous_state.pulse_duty_cycle;
+            previous_state.pulse_frequency = current_state.pulse_frequency;
+            previous_state.pulse_duty_cycle = current_state.pulse_duty_cycle;
+            previous_state.sine_amplitude = current_state.sine_amplitude;
         }
+    }
         /* Delay 250ms before next update */
     OSTimeDly(250, OS_OPT_TIME_PERIODIC, &os_err);
     assert(os_err == OS_ERR_NONE);
-
     }
 
 static void appTaskStateManagement(void *p_arg) {
@@ -330,5 +330,14 @@ void appTaskTSI(void *p_arg){
     }
     OSTimeDly(50, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 10ms
     assert(os_err == OS_ERR_NONE);
+    }
+}
+
+void appEnterCheck(void *p_arg){
+    OS_ERR os_err;
+    (void)p_arg;
+    while(1){
+        OSTimeDly(21, OS_OPT_TIME_PERIODIC, &os_err);
+
     }
 }

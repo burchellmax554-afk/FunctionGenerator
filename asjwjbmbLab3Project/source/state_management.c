@@ -3,12 +3,15 @@
 
 /* Reset the system state to default values */
 void ResetSystemState(void) {
-    current_state = (SystemState) {sine, 1000, 10, 1000, 50};
-    // Reset rotary encoder variables to prevent them from overriding the initial state
     SINE.qeCnt = 10;             // Default value for sine amplitude (or pulse duty cycle)
     PULSE.qeCnt = 50;
     SINE.qeXCnt = (10 * EDGE_DIV);  // Default position, scaled by EDGE_DIV (match the default values)
     PULSE.qeXCnt = (10 * EDGE_DIV);
+    current_state.sine_frequency = 1000;
+    current_state.pulse_frequency = 1000;
+    current_state.pulse_duty_cycle = 50;
+    current_state.wave_form = sine;
+    // Reset rotary encoder variables to prevent them from overriding the initial state
 }
 
 /* Calculate the number of digits of a number */

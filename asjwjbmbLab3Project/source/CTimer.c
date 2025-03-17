@@ -44,7 +44,7 @@ void ctInit(void){
    /* Select pll0_clk as CTIMER0's clock */
    SYSCON0->CTIMERCLKSEL[0] = SYSCON_CTIMERCLKSEL_SEL(1);
    /* Setup CTIMER0's clock divider and wait for it to stabilize */
-   SYSCON0->CTIMERCLKDIV[0] = 0;
+   SYSCON0->CTIMERCLKDIV[0] = 4; // Divide by 2, for example
    while (SYSCON0->CTIMERCLKDIV[0] & SYSCON_CTIMERXCLKDIV_CTIMERCLKDIV_UNSTAB(1)){}
    /* Enable clock gate for PORT0 */
    SYSCON0->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_PORT0(1);
@@ -73,7 +73,7 @@ void ctInit(void){
 void ctUpdateFrequency(INT32U freq, INT32U dutyCycle){
     if (freq == 0) return; // Prevent zero division
 
-    periodValue = 150000000 / freq; // Calculate period value based on new frequency
+    periodValue = (INT32U)((30000000.0 / freq) + 0.5); // Calculate period value based on new frequency
     dutyValue = 100 - dutyCycle; // Save the duty cycle
 
 
@@ -82,21 +82,22 @@ void ctUpdateFrequency(INT32U freq, INT32U dutyCycle){
     CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty Cycle change
 
     // Reset counter to apply
-    CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
+    CTIMER0->TCR = CTIMER_TCR_CEN(0); // Disable timer
     CTIMER0->TC = 0; // Reset counter
-    CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
+    CTIMER0->TCR = CTIMER_TCR_CEN(1); // Enable timer
 }
 
 /**********/
 // Function to update duty cycle
 void ctUpdateDutyCycle(INT32U freq, INT32U dutyCycle){
 
+
     dutyValue = 100 - dutyCycle; // Save the duty cycle
-    periodValue = 150000000 / freq;
+    periodValue = (INT32U)((30000000.0 / freq) + 0.5);
+    CTIMER0->MR[0] = CTIMER_MR_MATCH(periodValue - 1); // Change period value
     CTIMER0->MR[1] = CTIMER_MR_MATCH((periodValue * dutyValue) / 100); // Duty cycle change
     // Reset counter to apply
-    CTIMER0->TCR |= CTIMER_TCR_CEN(0); // Disable timer
+    CTIMER0->TCR = CTIMER_TCR_CEN(0); // Disable timer
     CTIMER0->TC = 0; // Reset counter
-    CTIMER0->TCR |= CTIMER_TCR_CEN(1); // Enable timer
+    CTIMER0->TCR = CTIMER_TCR_CEN(1); // Enable timer
 }
-
