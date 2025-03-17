@@ -2,6 +2,9 @@
 #include "state.h"
 
 /* Reset the system state to default values */
+/****************************************************************************************
+* Credit: Max Burchell + Jake Sheckler
+****************************************************************************************/
 void ResetSystemState(void) {
     SINE.qeCnt = 10;             // Default value for sine amplitude (or pulse duty cycle)
     PULSE.qeCnt = 50;
@@ -15,6 +18,9 @@ void ResetSystemState(void) {
 }
 
 /* Calculate the number of digits of a number */
+/****************************************************************************************
+* Credit: Max Burchell
+****************************************************************************************/
 INT8U GetNumberOfDigits(INT32U num) {
     INT8U num_digits = 0;
     if (num == 0) {

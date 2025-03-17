@@ -2,7 +2,7 @@
  * Timer.h
  *
  *  Created on: 20FEB2025, Last modified on 20FEB2025
- *      Author: John3
+ *      Credit: John Brown
  */
 
 #ifndef TIMER_H_

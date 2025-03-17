@@ -1,6 +1,8 @@
 #ifndef SINETABLE_H_
 #define SINETABLE_H_
-
+/****************************************************************************************
+* Credit: Aidan Walker
+****************************************************************************************/
 #include "MCUType.h"
 
 // Sine wave lookup table (for 91 angles from 0 to 90 degrees)

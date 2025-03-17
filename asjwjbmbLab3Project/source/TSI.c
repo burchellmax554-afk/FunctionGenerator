@@ -17,18 +17,13 @@
 #include "app_cfg.h"
 #include "TSI.h"
 #include "state.h"
-//#define TOUCH_OFFSET 0xD000U
 
-/*?????*/
 /*****************************************************************************************
  * TSI0Init: Initializes TSI0 module
- * Notes:
- *    -
+ * Credit: Jake Sheckler
  *****************************************************************************************/
 void TSIInit(void){
 
-    /* set constant offset count */
-//    tsiLevels.offset = TOUCH_OFFSET;
 
     SYSCON0->AHBCLKCTRLSET[3] = SYSCON_AHBCLKCTRL3_TSI(1);
     SYSCON->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_PORT1(1);
@@ -55,6 +50,7 @@ void TSIInit(void){
 <<<<<<< HEAD
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
+ *                   Credit: Jake Sheckler
  ********************************************************************************/
 void tsiChCalibration(void){
     TSI0->GENCS |= TSI_GENCS_SWTS(1);             //start a scan sequence
@@ -64,21 +60,8 @@ void tsiChCalibration(void){
     tsiLevels.threshold = tsiLevels.baseline +
                                          tsiLevels.offset;
 }
-
 /********************************************************************************
-=======
->>>>>>> origin/mbUpdated_Main
->>>>>>> 1c9e7b8 (Commit to main)
- *   TSITask: Cooperative task for timeslice scheduler
- *            Blocks for ~6ms
- *            In order to not block the task period should be > 6ms.
- *            To not miss a press, the task period should be < ~25ms.
-  ********************************************************************************/
-
-
-/********************************************************************************
- *   TSIGetSensorFlags: Returns value of sensor flag variable and clears it
- *                      to receive sensor press only one time.
+ *  Credit: Jake Sheckler
  ********************************************************************************/
 INT8U TSITouchGet(void){
     INT8U tflag;
@@ -89,6 +72,7 @@ INT8U TSITouchGet(void){
 
 /****************************************************************************************
 * Wave swap function
+* Credit: Jake Sheckler
 ****************************************************************************************/
 void TSISwap(void){
     switch (current_state.wave_form){

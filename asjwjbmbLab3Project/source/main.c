@@ -1,3 +1,6 @@
+/****************************************************************************************
+* Credit: Max Burchell + Jake Sheckler
+****************************************************************************************/
 #include <Timer.h>
 #include "MCUType.h"
 #include "os.h"
@@ -50,6 +53,7 @@ Defined Variables
 
 /****************************************************************************************
 * main()
+* Credit: Max Burchell
 ****************************************************************************************/
 void main(void) {
 
@@ -85,6 +89,7 @@ void main(void) {
 
 /****************************************************************************************
 * STARTUP TASK
+* Credit: Everyone
 ****************************************************************************************/
 static void appStartTask(void *p_arg) {
 
@@ -196,12 +201,12 @@ static void appStartTask(void *p_arg) {
 
 /****************************************************************************************
 * Task for managing the rotary encoder
+* Credit: Max Burchell
 ****************************************************************************************/
 static void appTaskRotary(void *p_arg) {
     (void)p_arg;
     OS_ERR os_err;
     qeQDCInit();
-    //current_state = (SystemState) {sine, 1000, 10, 1000, 50};  // Initialize system with sine wave by default
     while (1) {
         // Task content for rotary encoder will be added here later.
         OSTimeDly(SLICE_PER, OS_OPT_TIME_PERIODIC, &os_err);  // Periodic delay
@@ -272,6 +277,9 @@ static void appTaskFunctionDisplay(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Max Burchell
+****************************************************************************************/
 static void appTaskStateManagement(void *p_arg) {
     OS_ERR os_err;
     SW_T sw_in = 0; /* Initialize switch to 0 */
@@ -287,6 +295,9 @@ static void appTaskStateManagement(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Jake Sheckler
+****************************************************************************************/
 static void appTaskTouchDetection(void *p_arg) {
     OS_ERR os_err;
     (void)p_arg;  // Avoid unused parameter warning
@@ -303,6 +314,9 @@ static void appTaskTouchDetection(void *p_arg) {
     }
 }
 
+/****************************************************************************************
+* Credit: Jake Sheckler
+****************************************************************************************/
 void appTaskTSI(void *p_arg){
     OS_ERR os_err;
     (void)p_arg;
