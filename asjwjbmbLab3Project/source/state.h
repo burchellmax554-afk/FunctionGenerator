@@ -1,4 +1,5 @@
 #include "MCUType.h"
+#include "os.h"
 
 #ifndef STATE_H
 #define STATE_H
@@ -43,4 +44,10 @@ typedef struct{
 
 extern TOUCH_LEVEL_T tsiLevels;
 
+typedef struct{
+    INT8U count; /* Buffer count (alternates from 0 to 1 for ping-pong) */
+    OS_SEM flag; /* Semaphore to synchronize access*/
+} type_indexBuffer;
+
+extern type_indexBuffer indexBuffer;
 #endif /* STATE_H */
