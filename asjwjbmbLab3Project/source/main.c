@@ -302,7 +302,7 @@ static void appTaskTouchDetection(void *p_arg) {
             }
 
         // Delay to avoid overloading the system
-        OSTimeDly(100, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
+        OSTimeDly(200, OS_OPT_TIME_PERIODIC, &os_err);  // Delay 100ms
         assert(os_err == OS_ERR_NONE);
     }
 }
@@ -353,7 +353,7 @@ void appEnterCheck(void *p_arg) {
         } else if (input != '\0') {  // Avoid breaking if no input
             //Empty else statement for error handling
         }
-        OSTimeDly(100, OS_OPT_TIME_DLY, &os_err); //100ms Time delay
+        OSTimeDly(200, OS_OPT_TIME_DLY, &os_err); //100ms Time delay
         assert(os_err == OS_ERR_NONE);
         }
     }
