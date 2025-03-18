@@ -180,7 +180,7 @@ static void appStartTask(void *p_arg) {
 
 /****************************************************************************************
 * Task for managing the rotary encoder
-* Credit: Max Burchell
+* Credit: Max Burchell and Jake Sheckler
 ****************************************************************************************/
 static void appTaskRotary(void *p_arg) {
     (void)p_arg;

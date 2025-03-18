@@ -44,9 +44,6 @@ void TSIInit(void){
 }
 
 /********************************************************************************
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
  *   tsiCalibration: Calibration to find non-touch baseline
  *                   Note - the sensor must not be pressed when this is executed.
  *                   Credit: Jake Sheckler
@@ -60,30 +57,31 @@ void tsiChCalibration(void){
                                          tsiLevels.offset;
 }
 /********************************************************************************
+ * TSITouchGet: For sensing if the TSI is being touched or not. Basic Function.
  *  Credit: Jake Sheckler
  ********************************************************************************/
 INT8U TSITouchGet(void){
     INT8U tflag;
-    tflag = tsiLevels.tsiFlag;
-    tsiLevels.tsiFlag = 0;
-    return tflag;
+    tflag = tsiLevels.tsiFlag; //Setting tflag to the tsiflag in the struct
+    tsiLevels.tsiFlag = 0; //setting the tsiFlag as a 0 (reset)
+    return tflag; //sending out the tflag
 }
 
 /****************************************************************************************
-* Wave swap function
+* Wave swap function: Used for switching states
 * Credit: Jake Sheckler
 ****************************************************************************************/
 void TSISwap(void){
-    switch (current_state.wave_form){
-    case sine:
-        current_state.wave_form = pulse;
-        current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt;
+    switch (current_state.wave_form){ //relies on the current state wave form.
+    case sine: //if current state is sine,
+        current_state.wave_form = pulse; //Make it pulse
+        current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt; //set the duty cycle to the pulse one.
         break;
-    case pulse:
-        current_state.wave_form = sine;
-        current_state.sine_amplitude = SINE.qeCnt;
+    case pulse: //if current state is pulse,
+        current_state.wave_form = sine; //Now it's sine
+        current_state.sine_amplitude = SINE.qeCnt; //And sets sineamplitude to the encoder.
         break;
-    default:
+    default: //Default, make it sine.
         current_state. wave_form = sine;
         current_state.sine_amplitude = SINE.qeCnt;
     }

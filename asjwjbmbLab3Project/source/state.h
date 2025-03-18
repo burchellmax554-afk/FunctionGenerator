@@ -27,15 +27,15 @@ typedef struct {
 } SystemState;
 
 extern SystemState current_state;  // Declare current_state as an external variable
-extern  SystemState previous_state;
-extern SystemState defaultedstate;
+extern  SystemState previous_state; //Declaring previous staet as an external variable
+extern SystemState defaultedstate; //defaulted state variable (for help with the reset.
 
 typedef struct{
-    INT16S qeCnt;
-    INT16S qeXCnt;
+    INT16S qeCnt; //qeCnt val
+    INT16S qeXCnt; //qeXCnt val
 } rotary;
 
-extern rotary SINE;// Declare as external variable
+extern rotary SINE; //For splitting up the rotary movements for sine and pulse
 extern rotary PULSE;
 
 typedef struct{
@@ -43,9 +43,9 @@ typedef struct{
     INT16U offset;
     INT16U threshold;
     INT8U tsiFlag;
-}TOUCH_LEVEL_T;
+}TOUCH_LEVEL_T; //TSI struct
 
-extern TOUCH_LEVEL_T tsiLevels;
+extern TOUCH_LEVEL_T tsiLevels; //extern tsi struct
 
 
 #endif /* STATE_H */

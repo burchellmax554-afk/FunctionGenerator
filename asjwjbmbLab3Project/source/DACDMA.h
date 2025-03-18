@@ -20,8 +20,6 @@
 *   - Private if in the same module as startup task. Otherwise public.
 *****************************************************************************************/
 INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr);
-void DMAinit(INT16U* sourceBlock);
-void DACinit(void);
 INT16U indexBufferPend(OS_TICK tout, OS_ERR *os_err);
 void EDMA_0_CH0_IRQHandler(void);
 void WaveInit(void);

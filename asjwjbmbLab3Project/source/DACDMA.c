@@ -27,11 +27,6 @@ static OS_TCB generateSineTableTaskTCB;
 * Allocate task stack space.
 *************************************************************************/
 static CPU_STK generateSineTableTaskStk[APP_CFG_GENERATE_SINE_TABLE_TASK_STK_SIZE];
-/****************************************************************************
- *  Define DMA and waveform buffer settings
- ******************************************************************************/
-
-
 /******************************************************************************
  *  Ping-Pong Buffer structure
  ******************************************************************************/
@@ -41,19 +36,17 @@ typedef struct{
 } type_indexedBuffer;
 
 extern type_indexedBuffer indexedBuffer;
-
 /******************************************************************************
  *  Global Ping-Pong Buffer instance
  ******************************************************************************/
 static INT16U DMABuffer[BLOCKS][WAVE_SAMPLES_PER_BLOCK / 2];
-
+type_indexedBuffer indexedBuffer;
 /*******************************************************************************
  *  Function Prototypes
  *******************************************************************************/
 static void generateSineTableTask(void *p_arg);
-static void dacInit(void);
-static void wgDMAInit(INT16U *out_block);
-type_indexedBuffer indexedBuffer;
+static void DMAInit(INT16U* sourceBlock);
+static void DACInit(void);
 /****************************************************************************************
 * Function: WaveGenPend
 * Purpose: When called, wait for a signal from the Ping-Pong buffer semaphore.
@@ -63,12 +56,11 @@ type_indexedBuffer indexedBuffer;
 *   - os_err_ptr: Pointer to the operating system error status variable.
 * Returns: Current Ping-Pong buffer index.
 * Reese Bergeson, 03/15/2025
-* Jake Sheckler 3/16/2025
 ****************************************************************************************/
 INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
     OSSemPend(&(indexedBuffer.flag), tout, OS_OPT_PEND_BLOCKING, (CPU_TS *)0, os_err_ptr);
     assert(*os_err_ptr == OS_ERR_NONE);
-    return(indexedBuffer.count); /* Return current buffer index */
+    return(indexedBuffer.count); /* Return current buffer count */
 }
 
 /****************************************************************************************
@@ -77,15 +69,16 @@ INT32U WaveGenPend(OS_TICK tout, OS_ERR *os_err_ptr) {
 * Ping-Pong buffer, and peripherals.
 * Todd Morton, 02/11/2025
 * Reese Bergeson, 03/15/2025
+* Jake Sheckler 03/16/2025
 ****************************************************************************************/
 void WaveInit(void){
     OS_ERR os_err;
     OSSemCreate(&(indexedBuffer.flag), "Ping Pong Buffer Semaphore", 0, &os_err);
     assert(os_err == OS_ERR_NONE);
 
-    dacInit();
+    DACInit();
     /* Initialize DMA with pointer to 2 dimensional ping-pong buffer array */
-    wgDMAInit(&DMABuffer[0][0]);
+    DMAInit(&DMABuffer[0][0]);
 
     OSTaskCreate(&generateSineTableTaskTCB,
                 "Generate Sine Table Task",
@@ -109,7 +102,7 @@ void WaveInit(void){
  * Todd Morton, 02/11/2025
  * Bernhardt Krause, 03/15/2025
  * *************************************************************************************/
-static void dacInit(void){
+static void DACInit(void){
     SYSCON0->AHBCLKCTRLSET[3] = SYSCON_AHBCLKCTRL3_DAC2(1); /* Enable clock for DAC2 */
     SYSCON0->DAC[2].CLKSEL = SYSCON_DAC_CLKSEL_SEL(1); /* Select pll0_clk */
     SYSCON0->DAC[2].CLKDIV = 2; /* Setup DAC2's clock divider (150/3 = 50MHz) */
@@ -128,14 +121,14 @@ static void dacInit(void){
 }
 
 /****************************************************************************************
- * Function: wgDMAInit
+ * Function: DMAInit
  * Purpose: Configure DMA for Ping-Pong buffer data transfer.
  * Parameters:
  *          - out_block: Pointer to the initial output data block.
  * Todd Morton, 02/11/2025
  * Bernhardt Krause, 03/15/2025
  ****************************************************************************************/
-static void wgDMAInit(INT16U *out_block) {
+static void DMAInit(INT16U *out_block) {
     SYSCON->AHBCLKCTRLSET[0] = SYSCON_AHBCLKCTRL0_DMA0(1); /* Enable DMA Clock */
 
     DMA0->CH[WAVE_DMA_CH].TCD_SADDR = DMA_TCD_SADDR_SADDR(out_block);

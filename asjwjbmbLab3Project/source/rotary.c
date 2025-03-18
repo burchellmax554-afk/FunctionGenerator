@@ -17,35 +17,52 @@
 *                Output is 0-20. Samples every SLICE_PER.
 ******************************************************************************************/
 void qeCntOutTask(void) {
-    DB3_TURN_ON();
-    /* Output final count */
-    switch(current_state.wave_form){
-    case sine:
-        SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
-        if(SINE.qeXCnt > CNT_MAX * EDGE_DIV) {
-                    SINE.qeXCnt = CNT_MAX * EDGE_DIV;
-                } else if(SINE.qeXCnt < CNT_MIN) {
-                    SINE.qeXCnt = CNT_MIN;
-                }
+    DB3_TURN_ON();  // Turn on DB3
 
+    /* Output final count based on the current waveform type */
+    switch(current_state.wave_form) {
+
+    case sine:  // If state sine
+        // Update the count for the sine wave from encoder position change
+        SINE.qeXCnt = SINE.qeXCnt + (INT16S)(ENC0->POSD);
+
+        // Ensure the count stays within the valid range: between CNT_MIN and CNT_MAX * EDGE_DIV
+        if(SINE.qeXCnt > CNT_MAX * EDGE_DIV) {
+            SINE.qeXCnt = CNT_MAX * EDGE_DIV;  // Limit to the maximum value
+        } else if(SINE.qeXCnt < CNT_MIN) {
+            SINE.qeXCnt = CNT_MIN;  // Limit to the minimum value
+        }
+
+        // Calculate the final count by dividing by EDGE_DIV (to scale down)
         SINE.qeCnt = SINE.qeXCnt / EDGE_DIV;
+
+        // Call update
         updateSine();
         break;
-    case pulse:
+
+    case pulse:  // If wave is pulse
+        // Update the X count for the pulse train from encoder position change
         PULSE.qeXCnt = PULSE.qeXCnt + (INT16S)(ENC0->POSD);
+
+        // Keeps count in range (for pulse train, limit to 100 * EDGE_DIV)
         if(PULSE.qeXCnt > 100 * EDGE_DIV) {
-                    PULSE.qeXCnt = 100 * EDGE_DIV;
-                } else if(PULSE.qeXCnt < CNT_MIN) {
-                    PULSE.qeXCnt = CNT_MIN;
-                }
+            PULSE.qeXCnt = 100 * EDGE_DIV;  // Limit to 100 * EDGE_DIV
+        } else if(PULSE.qeXCnt < CNT_MIN) {
+            PULSE.qeXCnt = CNT_MIN;  // Limit to the minimum value
+        }
+
+        // Calculate the final count for the pulse waveform
         PULSE.qeCnt = PULSE.qeXCnt / EDGE_DIV;
+
+        // Call a function to update pulse waveform output
         updatePulseTrain();
         break;
-    default:
-        SINE.qeCnt = SINE.qeXCnt / EDGE_DIV;
 
+    default:  //Default go with sine.
+        SINE.qeCnt = SINE.qeXCnt / EDGE_DIV;
     }
-    DB3_TURN_OFF();
+
+    DB3_TURN_OFF();  // Turn off DB3
 }
 /******************************************************************************************
 * qeQDCInit() - Initialize QDC0 for simple rotational encoders.
