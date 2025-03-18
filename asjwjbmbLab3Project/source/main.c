@@ -196,6 +196,8 @@ static void appTaskRotary(void *p_arg) {
             break;
         case pulse:
             updatePulseTrain();  // Update pulse train duty cycle
+            ctUpdateDutyCycle(current_state.pulse_frequency, current_state.pulse_duty_cycle);
+
             break;
         default:
             updateSine();  // Default to sine if no mode is set
