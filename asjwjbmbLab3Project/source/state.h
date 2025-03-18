@@ -45,7 +45,7 @@ typedef struct{
     INT8U tsiFlag;
 }TOUCH_LEVEL_T; //TSI struct
 
-extern TOUCH_LEVEL_T tsiLevels; //extern tsi struct
+extern TOUCH_LEVEL_T tsiLevels; //extern tsi struct (instead of mutex)
 
 
 #endif /* STATE_H */
