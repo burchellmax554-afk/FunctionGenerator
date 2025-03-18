@@ -197,6 +197,8 @@ static void appTaskRotary(void *p_arg) {
         } else {
             updateSine();  // Default to sine if no mode is set
         }
+            OSTimeDly(50, OS_OPT_TIME_DLY, &os_err);  // Add a delay of 50ms
+                    assert(os_err == OS_ERR_NONE);
     }
 }
 /****************************************************************************************
