@@ -73,11 +73,11 @@ INT8U TSITouchGet(void){
 ****************************************************************************************/
 void TSISwap(void){
     switch (current_state.wave_form){ //relies on the current state wave form.
-    case sine: //if current state is sine,
+    case sine: //if current state is sine...
         current_state.wave_form = pulse; //Make it pulse
         current_state.pulse_duty_cycle = (INT16U)PULSE.qeCnt; //set the duty cycle to the pulse one.
         break;
-    case pulse: //if current state is pulse,
+    case pulse: //if current state is pulse...
         current_state.wave_form = sine; //Now it's sine
         current_state.sine_amplitude = SINE.qeCnt; //And sets sineamplitude to the encoder.
         break;
