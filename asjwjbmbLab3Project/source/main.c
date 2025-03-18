@@ -190,17 +190,20 @@ static void appTaskRotary(void *p_arg) {
         // Task content for rotary encoder will be added here later.
         OSTimeDly(SLICE_PER, OS_OPT_TIME_PERIODIC, &os_err);  // Periodic delay
         qeCntOutTask();
-        if (current_state.wave_form == sine) {
+        switch(current_state.wave_form){
+        case sine:
             updateSine();  // Update sinewave amplitude
-        } else if (current_state.wave_form == pulse) {
+            break;
+        case pulse:
             updatePulseTrain();  // Update pulse train duty cycle
-        } else {
+            break;
+        default:
             updateSine();  // Default to sine if no mode is set
         }
+    }
             OSTimeDly(50, OS_OPT_TIME_DLY, &os_err);  // Add a delay of 50ms
                     assert(os_err == OS_ERR_NONE);
     }
-}
 /****************************************************************************************
 * Task for managing the function display
 * Credit: Max Burchell for the base, Jake Sheckler for the revised.
