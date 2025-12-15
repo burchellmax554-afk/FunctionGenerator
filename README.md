@@ -1,5 +1,4 @@
-This project is a multi-parameter function generator developed by a four-person engineering team for an advanced embedded systems course. The system produces AC waveforms—such as sine, 
-square, or sawtooth—whose frequency, amplitude, phase, and waveform type can all be adjusted in real time by the user. The implementation integrates several embedded peripherals, 
+This project is a multi-parameter function generator developed by a four-person engineering team for an advanced embedded systems course. The system produces AC waveforms whose frequency, amplitude, phase, and waveform type can all be adjusted in real time by the user. The implementation integrates several embedded peripherals, 
 including hardware timers, UART communication, GPIO interfaces, and DAC/output circuitry, allowing the microcontroller to compute and output continuous waveform samples with stable 
 timing. Debugging was supported through structured print statements, and the final design was validated using lab instrumentation.
 
